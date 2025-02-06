@@ -1,9 +1,21 @@
 "use client";
 
+import { SubmittedDataPreviewCard } from "@/components/SubmittedDataPreviewCard";
+import { SubmittedDatasSection } from "@/components/SubmittedDatasSection";
 import { firestore } from "@/firebase/clientApp";
+import { SubmitDataModal } from "@/modals/SubmitDataModal";
 import { CampaignDocData } from "@/types/Campaign";
-import { Image, Spinner } from "@heroui/react";
-import { doc, getDoc } from "firebase/firestore";
+import { SubmittedDataDocData } from "@/types/SubmitData";
+import { Button, Image, Spinner } from "@heroui/react";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -13,6 +25,8 @@ export default function Home() {
   >(null);
 
   const { campaignId: id } = useParams();
+
+  const [isSubmitDataModalOpen, setIsSubmitDataModalOpen] = useState(false);
 
   useEffect(() => {
     getCampaignData();
@@ -42,6 +56,10 @@ export default function Home() {
     }
   };
 
+  const handleSubmitButton = () => {
+    setIsSubmitDataModalOpen(true);
+  };
+
   if (campaignData === null)
     return (
       <div className="flex w-full h-full justify-center items-center">
@@ -57,20 +75,72 @@ export default function Home() {
     );
 
   return (
-    <div className="flex flex-col w-full h-full justify-center items-center gap-10">
-      <div
-        id="creator-data"
-        className="flex flex-col justify-center items-center gap-3"
-      >
-        <Image
-          src="https://picsum.photos/200?random=1"
-          className=" rounded-full w-32 h-32"
-        />
-        <div>User Id</div>
-        <h1 className="text-2xl">{campaignData.creatorId}</h1>
+    <>
+      <div className="flex flex-col w-full h-full gap-10">
+        <div
+          id="creator-data"
+          className="flex flex-col justify-center items-center gap-3"
+        >
+          <Image
+            src="https://picsum.photos/200?random=1"
+            className=" rounded-full w-32 h-32"
+          />
+          <div className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Creator</div>
+            <h1 className="font-bold">{campaignData.creatorId}</h1>
+          </div>
+        </div>
+
+        <div id="campaign-details" className="grid grid-cols-2 gap-3 w-full">
+          <div id="campaign-name" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Title</div>
+            <h1 className="font-bold">{campaignData.title}</h1>
+          </div>
+          <div id="campaign-description" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Description</div>
+            <h1 className="font-bold">{campaignData.description}</h1>
+          </div>
+          <div id="campaign-sector" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Sector</div>
+            <h1 className="font-bold">{campaignData.sector}</h1>
+          </div>
+          <div id="campaign-price-offer" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Price Offer</div>
+            <h1 className="font-bold">{campaignData.priceOffer}</h1>
+          </div>
+          <div id="campaign-offer-currency" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Offer Currency</div>
+            <h1 className="font-bold">{campaignData.offerCurrency}</h1>
+          </div>
+          <div id="campaign-min-data-quality" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Min Data Quality</div>
+            <h1 className="font-bold">{campaignData.minDataQuality}</h1>
+          </div>
+          <div id="campaign-min-data-quantity" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Min Data Quantity</div>
+            <h1 className="font-bold">{campaignData.minDataQuantity}</h1>
+          </div>
+          <div id="campaign-status" className="flex flex-col gap-1">
+            <div className="text-xs">Campaign Status</div>
+            <h1 className="font-bold">{campaignData.status}</h1>
+          </div>
+        </div>
+
+        <div
+          id="submit-data-root"
+          className="flex flex-col w-full items-center"
+        >
+          <Button onPress={handleSubmitButton}>Submit Data</Button>
+        </div>
+
+        <SubmittedDatasSection campaignId={campaignData.id} />
       </div>
-      <h1 className="text-2xl">{campaignData.title}</h1>
-      <p className="text-lg">{campaignData.description}</p>
-    </div>
+
+      <SubmitDataModal
+        isOpen={isSubmitDataModalOpen}
+        setIsOpen={setIsSubmitDataModalOpen}
+        campaignData={campaignData}
+      />
+    </>
   );
 }
