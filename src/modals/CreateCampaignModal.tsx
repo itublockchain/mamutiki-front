@@ -1,5 +1,6 @@
 import { auth, firestore } from "@/firebase/clientApp";
 import { CampaignDocData, CampaignSector } from "@/types/Campaign";
+import { CampaignerDocData } from "@/types/Campaigner";
 import {
   Button,
   Input,
@@ -12,7 +13,15 @@ import {
   RadioGroup,
   Slider,
 } from "@heroui/react";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  increment,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { useState } from "react";
 
 type Props = {
@@ -26,7 +35,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [sector, setSector] = useState<CampaignSector | null>(null);
-  const [priceOffer, setPriceOffer] = useState(0);
+  const [unitPrice, setUnitPrice] = useState(0);
+  const [stakedBalance, setStakedBalance] = useState(0);
   const [minDataQuality, setMinDataQuality] = useState(70);
   const [minDataQuantity, setMinDataQuantity] = useState(5000);
 
@@ -34,7 +44,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     title: "",
     description: "",
     sector: "",
-    priceOffer: "",
+    unitPrice: "",
+    statkedBalance: "",
   });
 
   const [creationError, setCreationError] = useState("");
@@ -84,20 +95,38 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     setSector(e.target.value as CampaignSector);
   };
 
-  const handlePriceOfferChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUnitPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value.length === 0 || Number(e.target.value) <= 0) {
       setValidationErrors({
         ...validationErrors,
-        priceOffer: "Price offer is required",
+        unitPrice: "Price offer is required",
       });
     } else {
       setValidationErrors({
         ...validationErrors,
-        priceOffer: "",
+        unitPrice: "",
       });
     }
 
-    setPriceOffer(Number(e.target.value));
+    setUnitPrice(Number(e.target.value));
+  };
+
+  const handleStakedBalanceChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (e.target.value.length === 0 || Number(e.target.value) <= 0) {
+      setValidationErrors({
+        ...validationErrors,
+        statkedBalance: "Staked balance is required",
+      });
+    } else {
+      setValidationErrors({
+        ...validationErrors,
+        statkedBalance: "",
+      });
+    }
+
+    setStakedBalance(Number(e.target.value));
   };
 
   const handleMinDataQualityChange = (value: number | number[]) => {
@@ -126,13 +155,15 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     const currentUser = auth.currentUser;
     if (!currentUser) return setIsCreateLoading(false);
 
-    if (!title || !description || !sector || !priceOffer) {
+    if (!title || !description || !sector || !unitPrice || !stakedBalance) {
       setValidationErrors({
         title: !title ? "Title is required" : "",
         description: !description ? "Description is required" : "",
         sector: !sector ? "Sector is required" : "",
-        priceOffer: !priceOffer ? "Price offer is required" : "",
+        statkedBalance: !stakedBalance ? "Staked balance is required" : "",
+        unitPrice: !unitPrice ? "Price offer is required" : "",
       });
+
       setIsCreateLoading(false);
       return setIsCreateLoading(false);
     }
@@ -141,7 +172,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       title,
       description,
       sector,
-      priceOffer,
+      unitPrice,
+      stakedBalance,
       offerCurrency: "USDT",
       id: "", // will be updated.
       creatorId: currentUser.uid,
@@ -149,6 +181,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       minDataQuality,
       minDataQuantity,
       status: "open",
+      remainingStatkedBalance: stakedBalance,
+      submitCount: 0,
     };
 
     try {
@@ -159,25 +193,58 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       // Updating ID
       const newDocRef = doc(firestore, addDocResult.path);
       updateDoc(newDocRef, { id: newDocRef.id });
-
-      // Updating States
-      setIsCreateLoading(false);
-      setIsModalOpen(false);
-
-      // Resetting Inputs
-      return resetInputs();
     } catch (error) {
       console.error(error);
       setCreationError("An error occured while creating campaign");
       return setIsCreateLoading(false);
     }
+
+    // Updating or setting campaigner doc
+    try {
+      const possibleCampaignerDoc = await getDoc(
+        doc(firestore, `/campaigners/${currentUser.uid}`)
+      );
+
+      const doesExistBefore = possibleCampaignerDoc.exists();
+
+      if (!doesExistBefore) {
+        const newData: CampaignerDocData = {
+          id: currentUser.uid,
+          campaignCount: 1,
+          totalSpent: 0,
+          totalStaked: stakedBalance,
+          creationTs: Date.now(),
+        };
+
+        await setDoc(
+          doc(firestore, `/campaigners/${currentUser.uid}`),
+          newData
+        );
+      } else {
+        await updateDoc(doc(firestore, `/campaigners/${currentUser.uid}`), {
+          campaignCount: increment(1),
+          totalStaked: increment(stakedBalance),
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      setCreationError("An error occured while updating campaigner");
+      return setIsCreateLoading(false);
+    }
+
+    // Updating States
+    setIsCreateLoading(false);
+    setIsModalOpen(false);
+
+    // Resetting Inputs
+    return resetInputs();
   };
 
   const resetInputs = () => {
     setTitle("");
     setDescription("");
     setSector(null);
-    setPriceOffer(0);
+    setUnitPrice(0);
     setMinDataQuality(70);
     setMinDataQuantity(5000);
   };
@@ -199,6 +266,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               onChange={handleTitleChange}
               value={title}
             />
+
             <Input
               isInvalid={validationErrors.description.length > 0}
               isRequired
@@ -223,12 +291,21 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             </RadioGroup>
 
             <Input
-              isInvalid={validationErrors.priceOffer.length > 0}
+              isInvalid={validationErrors.unitPrice.length > 0}
               isRequired
-              label="Price Offer (USDT)"
+              label="Unit Price (USDT)"
               type="number"
-              onChange={handlePriceOfferChange}
-              value={priceOffer.toString()}
+              onChange={handleUnitPriceChange}
+              value={unitPrice.toString()}
+            />
+
+            <Input
+              isInvalid={validationErrors.statkedBalance.length > 0}
+              isRequired
+              label="Staked Balance (USDT)"
+              type="number"
+              onChange={handleStakedBalanceChange}
+              value={stakedBalance.toString()}
             />
 
             <Slider

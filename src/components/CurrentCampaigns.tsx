@@ -43,7 +43,8 @@ export function CurrentCampaigns({}: Props) {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {currentCampaigns.map((campaign, i) => (
         <CampaignCard
-          priceOffer={campaign.priceOffer}
+          unitPrice={campaign.unitPrice}
+          staked={campaign.stakedBalance}
           sector={campaign.sector}
           title={campaign.title}
           id={campaign.id}

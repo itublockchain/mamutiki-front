@@ -7,6 +7,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 
@@ -45,6 +46,56 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
 
   const [uploadedDataCID, setUploadedDataCID] = useState("");
 
+  const [possibleEarnedTokens, setPossibleEarnedTokens] = useState(0);
+
+  const [isThereEnoughStaked, setIsThereEnoughStaked] = useState<
+    null | boolean
+  >(null);
+
+  // Clearing States Initially
+  useEffect(() => {
+    setAnalyzedDataLength(null);
+    setAnalyzedDataQuality(null);
+    setIsFileAnalyzeLoading(false);
+    setIsSubmitLoading(false);
+    setUploadedDataCID("");
+  }, []);
+
+  // Managing setIsRequirementsMatched states
+  useEffect(() => {
+    if (analyzedDataLength === null || analyzedDataQuality === null)
+      return setIsRequirementsMatched(false);
+
+    if (
+      analyzedDataLength >= campaignData.minDataQuantity &&
+      analyzedDataQuality >= campaignData.minDataQuality
+    ) {
+      setIsRequirementsMatched(true);
+    } else {
+      setIsRequirementsMatched(false);
+    }
+  }, [analyzedDataLength, analyzedDataQuality, isFileAnalyzeLoading]);
+
+  // Managing possibleEarnedTokens
+  useEffect(() => {
+    if (analyzedDataLength === null || analyzedDataQuality === null)
+      return setPossibleEarnedTokens(0);
+
+    setPossibleEarnedTokens(
+      analyzedDataLength * analyzedDataQuality * campaignData.unitPrice
+    );
+  }, [campaignData, analyzedDataLength, analyzedDataQuality]);
+
+  // Managing isThereEnoughStaked
+  useEffect(() => {
+    if (!campaignData || !possibleEarnedTokens)
+      return setIsThereEnoughStaked(null);
+
+    setIsThereEnoughStaked(
+      campaignData.remainingStatkedBalance >= possibleEarnedTokens
+    );
+  }, [campaignData, possibleEarnedTokens]);
+
   const handleCancelButton = () => {
     setIsOpen(false);
   };
@@ -53,7 +104,10 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
     if (!isRequirementsMatched) return;
     if (isFileAnalyzeLoading || isSubmitLoading) return;
 
-    if (!analyzedDataLength || !analyzedDataQuality) return;
+    if (!analyzedDataLength || !analyzedDataQuality || !possibleEarnedTokens)
+      return;
+
+    if (!isThereEnoughStaked) return;
 
     const currentUserId = auth.currentUser?.uid || "";
     if (!currentUserId) {
@@ -75,9 +129,9 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
       dataCID: uploadedDataCID,
       dataLength: analyzedDataLength,
       dataQuality: analyzedDataQuality,
-      status: "pending",
       id: "", // will be updated.
       sector: campaignData.sector,
+      earnedTokens: possibleEarnedTokens,
     };
 
     try {
@@ -118,6 +172,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
           averageDataQualityScore:
             (oldData.totalDataQualityScore + analyzedDataQuality) /
             (oldData.totalSubmittedDataCount + 1),
+          totalEarned: increment(possibleEarnedTokens),
         });
       } else {
         const newData: SubmitterDocData = {
@@ -127,11 +182,40 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
           totalSubmitterDataLength: analyzedDataLength,
           totalDataQualityScore: analyzedDataQuality,
           averageDataQualityScore: analyzedDataQuality,
+          totalEarned: possibleEarnedTokens,
         };
         await setDoc(submitterDocRef, newData);
       }
     } catch (error) {
       console.error("Error on updating submitter doc: ", error);
+      return setIsSubmitLoading(false);
+    }
+
+    // Updating campaign doc
+    try {
+      const campaignDocRef = doc(firestore, `campaigns/${campaignData.id}`);
+
+      await updateDoc(campaignDocRef, {
+        submitCount: increment(1),
+        remainingStatkedBalance: increment(-possibleEarnedTokens),
+      });
+    } catch (error) {
+      console.error("Error on updating campaign doc: ", error);
+      return setIsSubmitLoading(false);
+    }
+
+    // Update campaigner doc
+    try {
+      const campaignerDocRef = doc(
+        firestore,
+        `campaigners/${campaignData.creatorId}`
+      );
+
+      await updateDoc(campaignerDocRef, {
+        totalSpent: increment(possibleEarnedTokens),
+      });
+    } catch (error) {
+      console.error("Error on updating campaigner doc: ", error);
       return setIsSubmitLoading(false);
     }
 
@@ -205,81 +289,109 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
     }
   };
 
-  // Clearing States Initially
-  useEffect(() => {
-    setAnalyzedDataLength(null);
-    setAnalyzedDataQuality(null);
-    setIsFileAnalyzeLoading(false);
-    setIsSubmitLoading(false);
-    setUploadedDataCID("");
-  }, []);
-
-  // Managing setIsRequirementsMatched states
-  useEffect(() => {
-    if (analyzedDataLength === null || analyzedDataQuality === null) return;
-
-    if (
-      analyzedDataLength >= campaignData.minDataQuantity &&
-      analyzedDataQuality >= campaignData.minDataQuality
-    ) {
-      setIsRequirementsMatched(true);
-    } else {
-      setIsRequirementsMatched(false);
-    }
-  }, [analyzedDataLength, analyzedDataQuality, isFileAnalyzeLoading]);
-
   return (
     <>
       <Modal isOpen={isOpen} onClose={handleCancelButton}>
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Submit Data</ModalHeader>
           <ModalBody>
-            <div id="message" className="flex flex-col gap-3">
-              <div className="text-xs text-warning-500">
-                You need to submit data satisfies these requirements:{" "}
+            <div id="campaign-limitaitons" className="flex flex-col gap-1">
+              <div className="text-default-500 text-xs underline">
+                Minimum Requirements
               </div>
-              <div className="flex flex-col gap-1">
-                <div className="text-xs">Campaign Min Data Quality</div>
-                <h1 className="font-bold">{campaignData.minDataQuality}</h1>
+              <div id="quality-requirement" className="flex gap-1 text-small ">
+                <div className="text-default-500">Quality: </div>
+                <div className="text-sm font-bold">
+                  {campaignData.minDataQuality}
+                </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <div className="text-xs">Campaign Min Data Quantity</div>
-                <h1 className="font-bold">{campaignData.minDataQuantity}</h1>
-              </div>
-              <div className="text-xs text-warning-500">
-                Your data will be started to analyze after uploading for if it
-                satisfies these requirements.
-              </div>
-
-              <Input
-                type="file"
-                accept=".json"
-                onChange={handleOnFileInputChange}
-              />
-
-              <div className="flex flex-col gap-1">
-                <div className="text-xs">Analyzed Data Length</div>
-                <h1 className="font-bold">
-                  {analyzedDataLength === null
-                    ? "Not Analyzed"
-                    : analyzedDataLength}
-                </h1>
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="text-xs">Analyzed Data Quality</div>
-                <h1 className="font-bold">
-                  {analyzedDataQuality === null
-                    ? "Not Analyzed"
-                    : analyzedDataQuality}
-                </h1>
+              <div id="length-requirement" className="flex gap-1 text-small ">
+                <div className="text-default-500">Length: </div>
+                <div className="text-sm font-bold">
+                  {campaignData.minDataQuantity}
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <div className="text-xs">Requirements Matched</div>
-                <h1 className="font-bold">
-                  {isRequirementsMatched ? "Yes" : "No"}
-                </h1>
+              <div id="unit-price" className="flex gap-1 text-small ">
+                <div className="text-default-500">Unit Price: </div>
+                <div className="text-sm font-bold">
+                  {campaignData.unitPrice}
+                </div>
               </div>
+            </div>
+
+            <div id="disclaimer" className=" text-small">
+              Please submit your data to make its analyzation start.
+            </div>
+            <Input
+              type="file"
+              onChange={handleOnFileInputChange}
+              isDisabled={isFileAnalyzeLoading || isSubmitLoading}
+              isRequired
+            />
+
+            <div id="analyzation-result" className="flex flex-col">
+              <div
+                id="title"
+                className="text-medium text-default-500 underline"
+              >
+                Analyzation Results
+              </div>
+
+              {isFileAnalyzeLoading && <Spinner color="current" />}
+
+              {!isFileAnalyzeLoading && (
+                <>
+                  <div id="length" className="mt-1 flex gap-1 text-small ">
+                    <div className="text-default-500">Length: </div>
+                    <div className="text-sm font-bold">
+                      {analyzedDataLength === null
+                        ? "Waiting for data."
+                        : analyzedDataLength + " Words"}
+                    </div>
+                  </div>
+
+                  <div id="quality" className="flex gap-1 text-small ">
+                    <div className="text-default-500">Quality: </div>
+                    <div className="text-sm font-bold">
+                      {analyzedDataQuality === null
+                        ? "Waiting for data."
+                        : analyzedDataQuality + "%"}
+                    </div>
+                  </div>
+
+                  <div
+                    id="possible-earned-tokens"
+                    className="flex gap-1 text-small "
+                  >
+                    <div className="text-default-500">
+                      Possible Earned Tokens:{" "}
+                    </div>
+                    <div className="text-sm font-bold">
+                      {possibleEarnedTokens === 0
+                        ? "Waiting for data."
+                        : possibleEarnedTokens}
+                    </div>
+                  </div>
+
+                  <div
+                    id="is-there-enough-staked"
+                    className="flex gap-1 text-small"
+                  >
+                    <div className="text-default-500">
+                      Is There Enough Staked
+                    </div>
+
+                    <div className="text-sm font-bold">
+                      {isThereEnoughStaked === null
+                        ? "Waiting for data."
+                        : isThereEnoughStaked
+                        ? "Yes"
+                        : "No"}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </ModalBody>
           <ModalFooter>
@@ -298,7 +410,8 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
               isDisabled={
                 isSubmitLoading ||
                 isFileAnalyzeLoading ||
-                !isRequirementsMatched
+                !isRequirementsMatched ||
+                !isThereEnoughStaked
               }
             >
               Submit

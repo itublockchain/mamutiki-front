@@ -4,12 +4,14 @@ import { Spinner } from "@heroui/react";
 import { collection, query, orderBy, where, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { SubmittedDataPreviewCard } from "./SubmittedDataPreviewCard";
+import { CampaignDocData } from "@/types/Campaign";
 
 type Props = {
   campaignId: string;
+  campaignDocData: CampaignDocData;
 };
 
-export function SubmittedDatasSection({ campaignId }: Props) {
+export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
   const [submittedDatas, setSubmittedDatas] = useState<
     SubmittedDataDocData[] | null
   >(null);
@@ -49,7 +51,11 @@ export function SubmittedDatasSection({ campaignId }: Props) {
   return (
     <div className="grid grid-cols-2 gap-5">
       {submittedDatas.map((d) => (
-        <SubmittedDataPreviewCard submittedData={d} key={d.id} />
+        <SubmittedDataPreviewCard
+          submittedData={d}
+          key={d.id}
+          campaignDocData={campaignDocData}
+        />
       ))}
     </div>
   );

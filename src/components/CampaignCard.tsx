@@ -5,18 +5,21 @@ import React from "react";
 
 type Props = {
   title: string;
-  priceOffer: number;
+  unitPrice: number;
+  staked: number;
   sector: CampaignSector;
   id: string;
 };
 
-export function CampaignCard({ title, priceOffer, sector, id }: Props) {
+export function CampaignCard({ title, unitPrice, staked, sector, id }: Props) {
   return (
     <Link href={`/campaigns/${id}`}>
       <Card className="py-4" isPressable>
         <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
           <p className="text-tiny uppercase font-bold">{sector}</p>
-          <small className="text-default-500">${priceOffer} USDT</small>
+          <small className="text-default-500">
+            ${unitPrice} USDT - {staked} TOTAL
+          </small>
           <h4 className="font-bold text-large">{title}</h4>
         </CardHeader>
         <CardBody className="overflow-visible py-2">

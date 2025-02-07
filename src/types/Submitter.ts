@@ -23,4 +23,6 @@ export type SubmitterDocData = {
   averageDataQualityScore: number;
 
   creationTs: number;
+
+  totalEarned: number;
 };

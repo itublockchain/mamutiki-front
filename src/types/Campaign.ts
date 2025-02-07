@@ -20,7 +20,17 @@ export type CampaignDocData = {
   /**
    * The offer amount for the campaign, typically a reward or funding amount.
    */
-  priceOffer: number;
+  unitPrice: number;
+
+  /**
+   * The total number of tokens that have been staked for the campaign.
+   */
+  stakedBalance: number;
+
+  /**
+   * The remaining number of tokens that can be staked for the campaign.
+   */
+  remainingStatkedBalance: number;
 
   /**
    * The currency in which the offer is provided.
@@ -57,6 +67,8 @@ export type CampaignDocData = {
    * The status of campaign.
    */
   status: CampaignStatus;
+
+  submitCount: number;
 };
 
 export type CampaignStatus = "open" | "canceled" | "finished";

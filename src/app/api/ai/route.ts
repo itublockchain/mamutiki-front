@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(
   process.env.GOOGLE_GENERATIVE_AI_API_KEY as string
 );
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-exp",
+  model: "gemini-2.0-pro-exp-02-05",
 });
 
 export async function POST(request: NextRequest) {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         score: parseInt(score.trim()),
-        length: fileContentsString.length * 1000,
+        length: getWordCount(fileContentsString) * 1000,
       },
       { status: 200 }
     );
@@ -72,4 +72,11 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function getWordCount(str: string): number {
+  // Split the string by spaces and filter out empty strings
+  const words = str.split(/\s+/).filter((word) => word.length > 0);
+  // Return the length of the filtered array
+  return words.length;
 }
