@@ -1,6 +1,8 @@
 import { auth, firestore } from "@/firebase/clientApp";
+import { createCampaign } from "@/helpers/aptosClient";
 import { CampaignDocData, CampaignSector } from "@/types/Campaign";
 import { CampaignerDocData } from "@/types/Campaigner";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   Button,
   Input,
@@ -49,6 +51,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   });
 
   const [creationError, setCreationError] = useState("");
+
+  const { account, connected, network, signAndSubmitTransaction } = useWallet();
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -150,23 +154,42 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   };
 
   const handleCreateButton = async () => {
-    setIsCreateLoading(true);
-
-    const currentUser = auth.currentUser;
-    if (!currentUser) return setIsCreateLoading(false);
-
     if (!title || !description || !sector || !unitPrice || !stakedBalance) {
-      setValidationErrors({
+      return setValidationErrors({
         title: !title ? "Title is required" : "",
         description: !description ? "Description is required" : "",
         sector: !sector ? "Sector is required" : "",
         statkedBalance: !stakedBalance ? "Staked balance is required" : "",
         unitPrice: !unitPrice ? "Price offer is required" : "",
       });
+    }
 
-      setIsCreateLoading(false);
+    const isFirebase =
+      process.env.NEXT_PUBLIC_IS_FIREBASE === "TRUE" ? true : false;
+
+    if (!isFirebase) {
+      if (!account || !connected || !network) {
+        return console.error("Wallet is not connected or network is invalid.");
+      }
+
+      setIsCreateLoading(true);
+
+      const result = await createCampaign(
+        account,
+        signAndSubmitTransaction,
+        sector,
+        `${title}-${description}-${sector}-${unitPrice}-${minDataQuality}-${minDataQuantity}`,
+        stakedBalance
+      );
+
+      console.log("Result: ", result);
+
+      setIsModalOpen(false);
       return setIsCreateLoading(false);
     }
+
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
 
     const newDocData: CampaignDocData = {
       title,
