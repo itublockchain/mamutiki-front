@@ -10,7 +10,7 @@ export default function Home() {
   const { loading, user } = useAuth();
 
   return (
-    <div className="flex flex-col w-full h-full ">
+    <div className="flex flex-col w-full h-full px-10 py-5 ">
       {loading && <GettingAuthStatusPage />}
       {!loading && !user && <AnonymousMainPage />}
       {!loading && user && <SignedMainPage />}

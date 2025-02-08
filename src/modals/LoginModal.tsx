@@ -40,6 +40,7 @@ export function LogInModal({ isOpen, setIsLoginModalOpen }: Props) {
       setError("Error on log-in: " + error);
     }
 
+    setIsLoginModalOpen(false);
     setLoading(false);
   };
 

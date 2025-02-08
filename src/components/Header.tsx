@@ -1,7 +1,7 @@
 import { auth } from "@/firebase/clientApp";
 import { CreateCampaignModal } from "@/modals/CreateCampaignModal";
+import { LogInModal } from "@/modals/LoginModal";
 import { useAuth } from "@/providers/AuthProvider";
-import { PlusIcon } from "@heroicons/react/16/solid";
 import { Button } from "@heroui/react";
 import { signOut } from "firebase/auth";
 import Link from "next/link";
@@ -16,6 +16,8 @@ export function Header({}: Props) {
 
   const [isCreateCampaignModalOpen, setIsCreateCampaignModalOpen] =
     useState(false);
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const handleSignOutButton = async () => {
     setSignOutLoading(true);
@@ -33,43 +35,55 @@ export function Header({}: Props) {
     setIsCreateCampaignModalOpen(true);
   };
 
+  const handleLoginButton = () => {
+    setIsLoginModalOpen(true);
+  };
+
   return (
     <>
-      <div
-        id="header"
-        className="flex w-full h-16 justify-between items-center"
+      <nav
+        id="header-root"
+        className=" sticky top-0 w-full flex justify-center items-center h-32 backdrop-blur-sm z-[9999]"
       >
-        <Link href="/" id="logo" className="font-bold text-large">
-          Data Marketplace
-        </Link>
         <div
-          id="right-side"
-          className="flex gap-5 items-center"
-          style={{
-            display: user ? "flex" : "none",
-          }}
+          id="header"
+          className="flex h-2/3 w-3/6 border border-gray-700 rounded-2xl items-center justify-between px-5 bg-black/70 backdrop-blur-3xl z-[9999]"
         >
-          <Button
-            color="primary"
-            onPress={handleCreateButtonAtHeader}
-            endContent={<PlusIcon className="w-5 h-5" />}
-          >
-            Create Campaign
-          </Button>
+          <Link href="/">
+            <div
+              id="logo"
+              className="text-default text-xl font-bold cursor-pointer"
+            >
+              Datagy
+            </div>
+          </Link>
 
-          <Button
-            color="warning"
-            onPress={handleSignOutButton}
-            spinner={signOutLoading}
-          >
-            Sign Out
-          </Button>
+          <div id="contents" className="flex flex-row gap-6 text-default">
+            <div id="about">About</div>
+            <div id="white-paper">White Paper</div>
+          </div>
+
+          {user && (
+            <div id="authed-left-part" className="flex gap-2">
+              <Button onPress={handleCreateButtonAtHeader}>
+                Create Campaign
+              </Button>
+              <Button onPress={handleSignOutButton}>Sign Out</Button>
+            </div>
+          )}
+
+          {!user && <Button onPress={handleLoginButton}>Connect Wallet</Button>}
         </div>
-      </div>
+      </nav>
 
       <CreateCampaignModal
         isModalOpen={isCreateCampaignModalOpen}
         setIsModalOpen={setIsCreateCampaignModalOpen}
+      />
+
+      <LogInModal
+        isOpen={isLoginModalOpen}
+        setIsLoginModalOpen={setIsLoginModalOpen}
       />
     </>
   );

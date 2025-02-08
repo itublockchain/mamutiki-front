@@ -4,7 +4,7 @@ import { SubmittedDatasSection } from "@/components/SubmittedDatasSection";
 import { firestore } from "@/firebase/clientApp";
 import { SubmitDataModal } from "@/modals/SubmitDataModal";
 import { CampaignDocData } from "@/types/Campaign";
-import { Button, Card, CardBody, Image, Spinner } from "@heroui/react";
+import { Button, Image, Spinner } from "@heroui/react";
 import { doc, getDoc } from "firebase/firestore";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -66,7 +66,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="flex flex-col w-full h-full gap-10">
+      <div className="flex flex-col w-full h-full gap-10 px-10 py-5">
         <div
           id="creator-data"
           className="flex flex-col justify-center items-center gap-3"
