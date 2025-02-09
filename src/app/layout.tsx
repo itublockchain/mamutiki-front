@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import "./globals.css";
 
 import { Providers } from "./providers";
+import { Toaster } from "react-hot-toast";
 
 export default function RootLayout({
   children,
@@ -12,8 +13,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="myTheme">
+      <HeadComponent />
       <body className="relative ">
         <Providers>
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: "black",
+                padding: "16px",
+                color: "white",
+                overflow: "scroll",
+              },
+            }}
+          />
           <Header />
           {children}
         </Providers>
@@ -21,3 +35,26 @@ export default function RootLayout({
     </html>
   );
 }
+
+const HeadComponent = () => (
+  <head>
+    {/* Basic Metadata */}
+    <title>Notiphar • Find Data You Need</title>
+    <meta name="description" content="Make Every Event Unique" />
+
+    {/* Icons for Light and Dark Modes */}
+    <link rel="icon" type="image/png" href="/icon.png" />
+
+    {/* Open Graph Metadata */}
+    <meta property="og:title" content="Notiphar • Find Data You Need" />
+    <meta
+      property="og:description"
+      content={"Notiphar is a platform where you can find data you need."}
+    />
+    <meta property="og:url" content="https://notiphar.com" />
+    <meta property="og:site_name" content="Notiphar" />
+    <meta property="og:image" content="https://notiphar.com/images/og.png" />
+    <meta property="og:locale" content="en-US" />
+    <meta property="og:type" content="website" />
+  </head>
+);

@@ -8,7 +8,7 @@ export function WalletProvider({ children }: PropsWithChildren) {
   return (
     <AptosWalletAdapterProvider
       plugins={wallets}
-      autoConnect={false}
+      autoConnect={true}
       onError={(error) => {
         console.error("Error from Wallet Adapter: ", error);
       }}

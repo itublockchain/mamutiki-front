@@ -1,8 +1,7 @@
 import { auth, firestore } from "@/firebase/clientApp";
-import { createCampaign } from "@/helpers/aptosClient";
+import { useAptosClient } from "@/helpers/useAptosClient";
 import { CampaignDocData, CampaignSector } from "@/types/Campaign";
 import { CampaignerDocData } from "@/types/Campaigner";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   Button,
   Input,
@@ -52,7 +51,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
 
   const [creationError, setCreationError] = useState("");
 
-  const { account, connected, network, signAndSubmitTransaction } = useWallet();
+  const { createCampaign } = useAptosClient();
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -168,15 +167,9 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       process.env.NEXT_PUBLIC_IS_FIREBASE === "TRUE" ? true : false;
 
     if (!isFirebase) {
-      if (!account || !connected || !network) {
-        return console.error("Wallet is not connected or network is invalid.");
-      }
-
       setIsCreateLoading(true);
 
       const result = await createCampaign(
-        account,
-        signAndSubmitTransaction,
         sector,
         `${title}-${description}-${sector}-${unitPrice}-${minDataQuality}-${minDataQuantity}`,
         stakedBalance
