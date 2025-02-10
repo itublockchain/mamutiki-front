@@ -1,4 +1,3 @@
-import { CampaignDocData } from "@/types/Campaign";
 import {
   Button,
   Input,
@@ -11,24 +10,14 @@ import {
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 
-import { auth, firestore } from "@/firebase/clientApp";
-import { SubmittedDataDocData } from "@/types/SubmitData";
-import { SubmitterDocData } from "@/types/Submitter";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  increment,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { useAptosClient } from "@/helpers/useAptosClient";
+import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { PinataSDK } from "pinata-web3";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  campaignData: CampaignDocData;
+  campaignData: GetCampaignFunctionResponse;
 };
 
 export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
@@ -52,6 +41,8 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
     null | boolean
   >(null);
 
+  const { addContribution } = useAptosClient();
+
   // Clearing States Initially
   useEffect(() => {
     setAnalyzedDataLength(null);
@@ -66,10 +57,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
     if (analyzedDataLength === null || analyzedDataQuality === null)
       return setIsRequirementsMatched(false);
 
-    if (
-      analyzedDataLength >= campaignData.minDataQuantity &&
-      analyzedDataQuality >= campaignData.minDataQuality
-    ) {
+    if (analyzedDataLength >= 0 && analyzedDataQuality >= 0) {
       setIsRequirementsMatched(true);
     } else {
       setIsRequirementsMatched(false);
@@ -81,9 +69,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
     if (analyzedDataLength === null || analyzedDataQuality === null)
       return setPossibleEarnedTokens(0);
 
-    setPossibleEarnedTokens(
-      analyzedDataLength * analyzedDataQuality * campaignData.unitPrice
-    );
+    setPossibleEarnedTokens(analyzedDataLength * campaignData.unit_price);
   }, [campaignData, analyzedDataLength, analyzedDataQuality]);
 
   // Managing isThereEnoughStaked
@@ -92,135 +78,11 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
       return setIsThereEnoughStaked(null);
 
     setIsThereEnoughStaked(
-      campaignData.remainingStatkedBalance >= possibleEarnedTokens
+      campaignData.remaining_reward >= possibleEarnedTokens
     );
   }, [campaignData, possibleEarnedTokens]);
 
   const handleCancelButton = () => {
-    setIsOpen(false);
-  };
-
-  const handleSubmitButton = async () => {
-    if (!isRequirementsMatched) return;
-    if (isFileAnalyzeLoading || isSubmitLoading) return;
-
-    if (!analyzedDataLength || !analyzedDataQuality || !possibleEarnedTokens)
-      return;
-
-    if (!isThereEnoughStaked) return;
-
-    const currentUserId = auth.currentUser?.uid || "";
-    if (!currentUserId) {
-      console.error("Error: User not logged in.");
-    }
-
-    // Creating Submit Doc at Firebase
-    const currentUserDisplayName = auth.currentUser?.uid || "";
-    if (!currentUserDisplayName) {
-      return console.error("Error: User not logged in.");
-    }
-
-    setIsSubmitLoading(true);
-
-    const data: SubmittedDataDocData = {
-      campaignId: campaignData.id,
-      creationTs: Date.now(),
-      creatorId: currentUserDisplayName,
-      dataCID: uploadedDataCID,
-      dataLength: analyzedDataLength,
-      dataQuality: analyzedDataQuality,
-      id: "", // will be updated.
-      sector: campaignData.sector,
-      earnedTokens: possibleEarnedTokens,
-    };
-
-    try {
-      const submittedDatasCollection = collection(firestore, "/submittedDatas");
-
-      const addDocResult = await addDoc(submittedDatasCollection, data);
-
-      // Updating "id" part
-      const newDoc = doc(firestore, addDocResult.path);
-      await updateDoc(newDoc, {
-        id: addDocResult.id,
-      });
-
-      // Done!
-    } catch (error) {
-      console.error("Error on creating submit data: ", error);
-      return setIsSubmitLoading(false);
-    }
-
-    // Updating or setting "submitter" doc
-    try {
-      const submitterDocRef = doc(firestore, `submitters/${currentUserId}`);
-
-      let doesExist = false;
-
-      // Look if it exist...
-      const optionalExistedDoc = await getDoc(submitterDocRef);
-
-      doesExist = optionalExistedDoc.exists();
-
-      if (doesExist) {
-        const oldData = optionalExistedDoc.data() as SubmitterDocData;
-
-        await updateDoc(submitterDocRef, {
-          totalSubmittedDataCount: increment(1),
-          totalSubmitterDataLength: increment(analyzedDataLength),
-          totalDataQualityScore: increment(analyzedDataQuality),
-          averageDataQualityScore:
-            (oldData.totalDataQualityScore + analyzedDataQuality) /
-            (oldData.totalSubmittedDataCount + 1),
-          totalEarned: increment(possibleEarnedTokens),
-        });
-      } else {
-        const newData: SubmitterDocData = {
-          creationTs: Date.now(),
-          id: currentUserId,
-          totalSubmittedDataCount: 1,
-          totalSubmitterDataLength: analyzedDataLength,
-          totalDataQualityScore: analyzedDataQuality,
-          averageDataQualityScore: analyzedDataQuality,
-          totalEarned: possibleEarnedTokens,
-        };
-        await setDoc(submitterDocRef, newData);
-      }
-    } catch (error) {
-      console.error("Error on updating submitter doc: ", error);
-      return setIsSubmitLoading(false);
-    }
-
-    // Updating campaign doc
-    try {
-      const campaignDocRef = doc(firestore, `campaigns/${campaignData.id}`);
-
-      await updateDoc(campaignDocRef, {
-        submitCount: increment(1),
-        remainingStatkedBalance: increment(-possibleEarnedTokens),
-      });
-    } catch (error) {
-      console.error("Error on updating campaign doc: ", error);
-      return setIsSubmitLoading(false);
-    }
-
-    // Update campaigner doc
-    try {
-      const campaignerDocRef = doc(
-        firestore,
-        `campaigners/${campaignData.creatorId}`
-      );
-
-      await updateDoc(campaignerDocRef, {
-        totalSpent: increment(possibleEarnedTokens),
-      });
-    } catch (error) {
-      console.error("Error on updating campaigner doc: ", error);
-      return setIsSubmitLoading(false);
-    }
-
-    // After successful sumbit...
-    setIsSubmitLoading(false);
     setIsOpen(false);
   };
 
@@ -289,6 +151,34 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
     }
   };
 
+  const handleSubmitButton = async () => {
+    if (!isRequirementsMatched) return;
+    if (isFileAnalyzeLoading || isSubmitLoading) return;
+
+    if (!analyzedDataLength || !analyzedDataQuality || !possibleEarnedTokens)
+      return;
+
+    if (!isThereEnoughStaked) return;
+
+    setIsSubmitLoading(true)
+
+    const response = await addContribution({
+      campaignId: campaignData.id,
+      data: uploadedDataCID,
+      dataCount: analyzedDataLength,
+      verified: true,
+    });
+
+    if (!response) {
+      console.error("Error on submitting data: ", response);
+      return setIsSubmitLoading(false);
+    }
+
+    // After successful sumbit...
+    setIsSubmitLoading(false);
+    setIsOpen(false);
+  };
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={handleCancelButton}>
@@ -301,21 +191,17 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
               </div>
               <div id="quality-requirement" className="flex gap-1 text-small ">
                 <div className="text-default-500">Quality: </div>
-                <div className="text-sm font-bold">
-                  {campaignData.minDataQuality}
-                </div>
+                <div className="text-sm font-bold">0</div>
               </div>
               <div id="length-requirement" className="flex gap-1 text-small ">
                 <div className="text-default-500">Length: </div>
-                <div className="text-sm font-bold">
-                  {campaignData.minDataQuantity}
-                </div>
+                <div className="text-sm font-bold">0</div>
               </div>
 
               <div id="unit-price" className="flex gap-1 text-small ">
                 <div className="text-default-500">Unit Price: </div>
                 <div className="text-sm font-bold">
-                  {campaignData.unitPrice}
+                  {campaignData.unit_price}
                 </div>
               </div>
             </div>

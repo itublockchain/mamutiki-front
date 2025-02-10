@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         score: parseInt(score.trim()),
-        length: getWordCount(fileContentsString) * 1000,
+        length: getWordCount(fileContentsString),
       },
       { status: 200 }
     );

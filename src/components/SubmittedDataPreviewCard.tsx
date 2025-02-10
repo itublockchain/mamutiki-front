@@ -1,5 +1,6 @@
 import { VisitSubmittedDataModal } from "@/modals/VisitSubmittedDataModal";
 import { CampaignDocData } from "@/types/Campaign";
+import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { SubmittedDataDocData } from "@/types/SubmitData";
 import {
   Card,
@@ -15,7 +16,7 @@ import { useState } from "react";
 
 type Props = {
   submittedData: SubmittedDataDocData;
-  campaignDocData: CampaignDocData;
+  campaignDocData: GetCampaignFunctionResponse;
 };
 
 export function SubmittedDataPreviewCard({
@@ -89,7 +90,7 @@ export function SubmittedDataPreviewCard({
               showValueLabel={true}
               size="sm"
               value={submittedData.dataLength}
-              maxValue={campaignDocData.minDataQuantity}
+              maxValue={100}
             />
           </div>
 
@@ -107,7 +108,7 @@ export function SubmittedDataPreviewCard({
               showValueLabel={true}
               size="sm"
               value={submittedData.earnedTokens}
-              maxValue={campaignDocData.stakedBalance}
+              maxValue={campaignDocData.reward_pool}
             />
           </div>
         </CardBody>

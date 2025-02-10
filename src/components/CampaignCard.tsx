@@ -1,22 +1,18 @@
-import { CampaignSector } from "@/types/Campaign";
-import { Card, CardHeader, CardBody, Image } from "@heroui/react";
+import { Card, CardBody, CardHeader, Image } from "@heroui/react";
 import Link from "next/link";
-import React from "react";
 
 type Props = {
   title: string;
   unitPrice: number;
   staked: number;
-  sector: CampaignSector;
-  id: string;
+  id: number;
 };
 
-export function CampaignCard({ title, unitPrice, staked, sector, id }: Props) {
+export function CampaignCard({ title, unitPrice, staked, id }: Props) {
   return (
     <Link href={`/campaigns/${id}`}>
       <Card className="py-4" isPressable>
         <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-          <p className="text-tiny uppercase font-bold text-default">{sector}</p>
           <small className="text-default-500">
             ${unitPrice} USDT - {staked} TOTAL
           </small>
@@ -26,7 +22,7 @@ export function CampaignCard({ title, unitPrice, staked, sector, id }: Props) {
           <Image
             alt="Card background"
             className="object-cover rounded-xl"
-            src={`/sectorImages/${sector}.png`}
+            src={`https://picsum.photos/400?random=${id}`}
           />
         </CardBody>
       </Card>

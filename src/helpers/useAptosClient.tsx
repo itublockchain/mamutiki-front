@@ -1,51 +1,122 @@
+import {
+  AddContributionFunctionInput,
+  CreateCampaignFunctionInput,
+  GetCampaignFunctionResponse,
+} from "@/types/Contract";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 const ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_ACCOUNT_ADDRESS;
 if (!ACCOUNT_ADDRESS) throw new Error("NEXT_PUBLIC_ACCOUNT_ADDRESS is not set");
 
 export function useAptosClient() {
-  const { signAndSubmitTransaction, network: networkFromAdaptor } = useWallet();
+  const {
+    signAndSubmitTransaction,
+    network: networkFromAdaptor,
+    isLoading: isWalletLoading,
+  } = useWallet();
 
-  const [network, setNetwork] = useState<
-    Network.DEVNET | Network.TESTNET | Network.MAINNET | undefined
-  >(undefined);
+  const lastNetworkRef = useRef<Network | null>(null);
 
-  useEffect(() => {
-    if (!networkFromAdaptor) return setNetwork(undefined);
+  const [isAptosClientReady, setIsAptosClientReady] = useState(false);
 
-    const name = networkFromAdaptor.name as "mainnet" | "testnet" | "custom";
+  const network = useMemo(() => {
+    if (!networkFromAdaptor) return null;
 
-    if (name === "custom") {
-      setNetwork(Network.DEVNET);
-      toast.success("Network changed to " + "devnet");
-    } else if (name === "testnet") {
-      setNetwork(Network.TESTNET);
-      toast.success("Network changed to " + "testnet");
-    } else if (name === "mainnet") {
-      setNetwork(Network.MAINNET);
-      toast.success("Network changed to " + "mainnet");
-    } else {
-      setNetwork(undefined);
-      toast.error("Selected network not supported.");
-    }
+    const networkMap = {
+      custom: Network.DEVNET,
+      testnet: Network.TESTNET,
+      mainnet: Network.MAINNET,
+    };
+
+    return networkMap[networkFromAdaptor.name as keyof typeof networkMap];
   }, [networkFromAdaptor]);
 
-  async function createCampaign(
-    dataSpec: string,
-    qualityCretaria: string,
-    rewardPool: number
-  ) {
-    if (!network) {
-      console.error("Network is not set.");
+  const aptosClient = useMemo(() => {
+    if (!network || isWalletLoading) return null;
+    return new Aptos(new AptosConfig({ network }));
+  }, [network, isWalletLoading]);
+
+  // Managing lastNetworkRef to prevent multiple toasts.
+  useEffect(() => {
+    if (isWalletLoading || network === lastNetworkRef.current) return;
+
+    toast.success(`Network changed to ${network}`);
+    lastNetworkRef.current = network;
+  }, [network, isWalletLoading]);
+
+  // Managing isAptosClientReady state.
+  useEffect(() => {
+    if (!aptosClient || !network || isWalletLoading)
+      return setIsAptosClientReady(false);
+
+    setIsAptosClientReady(true);
+  }, [aptosClient, network, isWalletLoading]);
+
+  const functionAccessStringCreator = (
+    moduleName: string,
+    functionName: string
+  ): `${string}::${string}::${string}` => {
+    return `${ACCOUNT_ADDRESS}::${moduleName}::${functionName}`;
+  };
+
+  const getParsedError = (error: string) => {
+    try {
+      return JSON.parse(error) as {
+        message: string;
+        error_code: string;
+        vm_error_code: string;
+      };
+    } catch {
+      return {
+        message: "Unknown error",
+        error_code: "Unknown error",
+        vm_error_code: "Unknown error",
+      };
+    }
+  };
+
+  const parseCampaignResponse = (
+    response: any
+  ): GetCampaignFunctionResponse => {
+    const hexToUtf8 = (hexString: string) => {
+      if (hexString.startsWith("0x")) {
+        hexString = hexString.slice(2);
+      }
+      return Buffer.from(hexString, "hex").toString("utf-8");
+    };
+
+    return {
+      id: Number(response.id),
+      title: hexToUtf8(response.title),
+      description: hexToUtf8(response.description),
+      creator: response.creator,
+      data_spec: hexToUtf8(response.data_spec),
+      reward_pool: Number(response.reward_pool) / 100000000,
+      remaining_reward: Number(response.remaining_reward) / 100000000,
+      unit_price: Number(response.unit_price) / 100000000,
+      active: response.active,
+    };
+  };
+
+  const handleError = (error: unknown, context: string) => {
+    if (error === "User Rejected the request") {
+      toast.error("Request rejected by the user.");
+      return;
+    }
+
+    const parsedError = getParsedError(error as string);
+    toast.error(`An error occurred while ${context}: \n${parsedError.message}`);
+    console.error(`Error on ${context}: `, error);
+  };
+
+  const createCampaign = async (functionInput: CreateCampaignFunctionInput) => {
+    if (!aptosClient || !network) {
       toast.error("Network is not set.");
       return false;
     }
-
-    const config = new AptosConfig({ network: network });
-    const aptosClient = new Aptos(config);
 
     try {
       const signAndSubmitResult = await signAndSubmitTransaction({
@@ -55,66 +126,126 @@ export function useAptosClient() {
             "create_campaign"
           ),
           functionArguments: [
-            Array.from(Buffer.from(dataSpec)),
-            Array.from(Buffer.from(qualityCretaria)),
-            rewardPool.toString(),
+            Array.from(Buffer.from(functionInput.title)),
+            Array.from(Buffer.from(functionInput.description)),
+            Array.from(Buffer.from(functionInput.dataSpec)),
+            functionInput.unitPrice.toString(),
+            functionInput.rewardPool.toString(),
           ],
         },
       });
 
-      console.log("signAndSubmit Result: ", signAndSubmitResult);
-
-      const executedTx = await aptosClient.waitForTransaction({
+      await aptosClient.waitForTransaction({
         transactionHash: signAndSubmitResult.hash,
       });
-
-      console.log("Executed Tx: ", executedTx);
-
       toast.success("Campaign created successfully!");
-
       return true;
     } catch (error) {
-      const parsedError = getParsedError(error as string);
-
-      toast.error(
-        //@ts-ignore
-        "An error occured while creating campaign: \n" + parsedError.message
-      );
-      console.error("Error on creating campaign: ", error);
+      handleError(error, "creating campaign");
       return false;
     }
-  }
+  };
 
-  function functionAccessStringCreator(
-    moduleName: string,
-    functionName: string
-  ): `${string}::${string}::${string}` {
-    return `${ACCOUNT_ADDRESS}::${moduleName}::${functionName}`;
-  }
-
-  function getParsedError(error: string): {
-    message: string;
-    error_code: string;
-    vm_error_code: string;
-  } {
-    try {
-      const parsedError = JSON.parse(error) as {
-        message: string;
-        error_code: string;
-        vm_error_code: string;
-      };
-
-      return parsedError;
-    } catch (error) {
-      return {
-        message: "Unknown error",
-        error_code: "Unknown error",
-        vm_error_code: "Unknown error",
-      };
+  const getAllCampaigns = async () => {
+    if (!aptosClient || !network) {
+      toast.error("Network is not set.");
+      return false;
     }
-  }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: functionAccessStringCreator(
+            "CampaignManager",
+            "get_all_campaigns"
+          ),
+          functionArguments: [],
+          typeArguments: [],
+        },
+      });
+
+      if (!response[0]) {
+        console.error("Error on getting campaigns: ", response);
+        return false;
+      }
+
+      return (response[0] as any[]).map(parseCampaignResponse);
+    } catch (error) {
+      handleError(error, "fetching campaigns");
+      return false;
+    }
+  };
+
+  const getCampaignData = async (campaignId: string) => {
+    if (!aptosClient || !network) {
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: functionAccessStringCreator(
+            "CampaignManager",
+            "get_campaign"
+          ),
+          functionArguments: [campaignId.toString()],
+        },
+      });
+
+      if (!response[0]) {
+        console.error("Error on getting campaign: ", campaignId, response);
+        return false;
+      }
+
+      console.log(response);
+
+      return parseCampaignResponse(response[0]);
+    } catch (error) {
+      handleError(error, "fetching campaign data");
+      return false;
+    }
+  };
+
+  const addContribution = async (
+    functionInput: AddContributionFunctionInput
+  ) => {
+    if (!aptosClient || !network) {
+      toast.error("Network is not set.");
+      return false;
+    }
+
+    try {
+      const signAndSubmitResult = await signAndSubmitTransaction({
+        data: {
+          function: functionAccessStringCreator(
+            "ContributionManager",
+            "add_contribution"
+          ),
+          functionArguments: [
+            functionInput.campaignId.toString(),
+            functionInput.dataCount.toString(),
+            Array.from(Buffer.from(functionInput.data)),
+            functionInput.verified,
+          ],
+        },
+      });
+
+      await aptosClient.waitForTransaction({
+        transactionHash: signAndSubmitResult.hash,
+      });
+      toast.success("Data submitted successfully");
+      return true;
+    } catch (error) {
+      handleError(error, "submitting data");
+      return false;
+    }
+  };
 
   return {
     createCampaign,
+    getAllCampaigns,
+    getCampaignData,
+    addContribution,
+    isAptosClientReady,
   };
 }

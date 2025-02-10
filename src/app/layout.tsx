@@ -28,6 +28,7 @@ export default function RootLayout({
               },
             }}
           />
+
           <Header />
           {children}
         </Providers>

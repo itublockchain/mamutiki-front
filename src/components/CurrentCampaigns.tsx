@@ -1,36 +1,41 @@
-import { firestore } from "@/firebase/clientApp";
-import { CampaignDocData } from "@/types/Campaign";
+import { useAptosClient } from "@/helpers/useAptosClient";
+import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { Spinner } from "@heroui/react";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CampaignCard } from "./CampaignCard";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 type Props = {};
 
 export function CurrentCampaigns({}: Props) {
   const [currentCampaigns, setCurrentCampaigns] = useState<
-    CampaignDocData[] | null
+    GetCampaignFunctionResponse[] | null
   >(null);
 
-  const getCurrentCampaigns = async () => {
-    try {
-      const campaignCollectionRef = collection(firestore, "/campaigns");
+  const [isLoading, setIsLoading] = useState(false);
 
-      const q = query(campaignCollectionRef, orderBy("creationTs", "desc"));
+  const { getAllCampaigns, isAptosClientReady } = useAptosClient();
 
-      const queryResult = await getDocs(q);
+  const getInitialCampaings = async () => {
+    if (isLoading) return;
 
-      setCurrentCampaigns(
-        queryResult.docs.map((d) => d.data() as CampaignDocData)
-      );
-    } catch (error) {
-      console.log("getCurrentCampaigns error", error);
+    setIsLoading(true);
+
+    const campaings = await getAllCampaigns();
+    if (!campaings) {
+      console.error("Error getting campaigns. See other logs.");
+      setIsLoading(false);
+      return setCurrentCampaigns(null);
     }
+
+    setIsLoading(false);
+    setCurrentCampaigns(campaings);
   };
 
   useEffect(() => {
-    getCurrentCampaigns();
-  }, []);
+    if (!isAptosClientReady) return;
+    getInitialCampaings();
+  }, [isAptosClientReady]);
 
   if (currentCampaigns === null)
     return (
@@ -40,17 +45,19 @@ export function CurrentCampaigns({}: Props) {
     );
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {currentCampaigns.map((campaign, i) => (
-        <CampaignCard
-          unitPrice={campaign.unitPrice}
-          staked={campaign.stakedBalance}
-          sector={campaign.sector}
-          title={campaign.title}
-          id={campaign.id}
-          key={i}
-        />
-      ))}
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
+        {currentCampaigns &&
+          currentCampaigns.map((campaign, i) => (
+            <CampaignCard
+              id={campaign.id}
+              staked={campaign.reward_pool}
+              unitPrice={campaign.unit_price}
+              title={campaign.title}
+              key={i}
+            />
+          ))}
+      </div>
     </div>
   );
 }

@@ -5,9 +5,7 @@ import { Button } from "@heroui/react";
 import Link from "next/link";
 import { useState } from "react";
 
-type Props = {};
-
-export function Header({}: Props) {
+export function Header() {
   const { connected, disconnect } = useWallet();
 
   const [isCreateCampaignModalOpen, setIsCreateCampaignModalOpen] =
@@ -32,11 +30,11 @@ export function Header({}: Props) {
     <>
       <nav
         id="header-root"
-        className=" sticky top-0 w-full flex justify-center items-center h-32 backdrop-blur-sm z-[10]"
+        className=" sticky top-0 z-[50] w-full flex justify-center items-center h-32"
       >
         <div
           id="header"
-          className="flex h-2/3 w-3/6 border border-gray-700 rounded-2xl items-center justify-between px-5 bg-black/70 backdrop-blur-3xl z-[10]"
+          className="flex h-2/3 w-3/6 border border-gray-700 rounded-2xl items-center justify-between px-5 bg-black/70 backdrop-blur-md"
         >
           <Link href="/">
             <div
