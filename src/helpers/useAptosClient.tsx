@@ -197,8 +197,6 @@ export function useAptosClient() {
         return false;
       }
 
-      console.log(response);
-
       return parseCampaignResponse(response[0]);
     } catch (error) {
       handleError(error, "fetching campaign data");
@@ -224,8 +222,9 @@ export function useAptosClient() {
           functionArguments: [
             functionInput.campaignId.toString(),
             functionInput.dataCount.toString(),
-            Array.from(Buffer.from(functionInput.data)),
-            functionInput.verified,
+            Array.from(Buffer.from(functionInput.store_key)),
+            functionInput.score.toString(),
+            Array.from(Buffer.from(functionInput.sign, "hex")),
           ],
         },
       });

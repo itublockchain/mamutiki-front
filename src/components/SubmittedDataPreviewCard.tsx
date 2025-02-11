@@ -1,15 +1,14 @@
 import { VisitSubmittedDataModal } from "@/modals/VisitSubmittedDataModal";
-import { CampaignDocData } from "@/types/Campaign";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { SubmittedDataDocData } from "@/types/SubmitData";
 import {
   Card,
-  CardHeader,
   CardBody,
   CardFooter,
+  CardHeader,
   Divider,
-  Link,
   Image,
+  Link,
   Progress,
 } from "@heroui/react";
 import { useState } from "react";

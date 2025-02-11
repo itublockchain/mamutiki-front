@@ -29,9 +29,11 @@ export type GetCampaignFunctionResponse = {
 
 export type ListAllCampaignsFunctionResponse = GetCampaignFunctionResponse[];
 
+// campaign_id, data_count, store_key, score, sign
 export type AddContributionFunctionInput = {
   campaignId: number;
   dataCount: number;
-  data: string;
-  verified: boolean;
+  store_key: string;
+  score: string;
+  sign: string;
 };

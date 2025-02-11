@@ -1,7 +1,5 @@
-import { CampaignSector } from "./Campaign";
-
 export type SubmittedDataDocData = {
-  sector: CampaignSector;
+  sector: "data";
   id: string;
   creatorId: string;
   creationTs: number;

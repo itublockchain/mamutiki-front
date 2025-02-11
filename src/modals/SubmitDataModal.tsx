@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
-import { PinataSDK } from "pinata-web3";
+import { AIAnalysisResponse } from "@/types/API";
 
 type Props = {
   isOpen: boolean;
@@ -21,19 +21,11 @@ type Props = {
 };
 
 export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
-  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [isFileAnalyzeLoading, setIsFileAnalyzeLoading] = useState(false);
 
-  const [analyzedDataLength, setAnalyzedDataLength] = useState<null | number>(
-    null
-  );
-  const [analyzedDataQuality, setAnalyzedDataQuality] = useState<null | number>(
-    null
-  );
+  const [aiAnalysis, setAIAnalysis] = useState<null | AIAnalysisResponse>(null);
 
   const [isRequirementsMatched, setIsRequirementsMatched] = useState(false);
-
-  const [uploadedDataCID, setUploadedDataCID] = useState("");
 
   const [possibleEarnedTokens, setPossibleEarnedTokens] = useState(0);
 
@@ -41,36 +33,34 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
     null | boolean
   >(null);
 
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+
   const { addContribution } = useAptosClient();
 
   // Clearing States Initially
   useEffect(() => {
-    setAnalyzedDataLength(null);
-    setAnalyzedDataQuality(null);
     setIsFileAnalyzeLoading(false);
     setIsSubmitLoading(false);
-    setUploadedDataCID("");
+    setAIAnalysis(null);
   }, []);
 
   // Managing setIsRequirementsMatched states
   useEffect(() => {
-    if (analyzedDataLength === null || analyzedDataQuality === null)
-      return setIsRequirementsMatched(false);
+    if (!aiAnalysis) return setIsRequirementsMatched(false);
 
-    if (analyzedDataLength >= 0 && analyzedDataQuality >= 0) {
+    if (aiAnalysis.score >= 0 && aiAnalysis.contentLength >= 0) {
       setIsRequirementsMatched(true);
     } else {
       setIsRequirementsMatched(false);
     }
-  }, [analyzedDataLength, analyzedDataQuality, isFileAnalyzeLoading]);
+  }, [aiAnalysis, isFileAnalyzeLoading]);
 
   // Managing possibleEarnedTokens
   useEffect(() => {
-    if (analyzedDataLength === null || analyzedDataQuality === null)
-      return setPossibleEarnedTokens(0);
+    if (!aiAnalysis) return setPossibleEarnedTokens(0);
 
-    setPossibleEarnedTokens(analyzedDataLength * campaignData.unit_price);
-  }, [campaignData, analyzedDataLength, analyzedDataQuality]);
+    setPossibleEarnedTokens(aiAnalysis.contentLength * campaignData.unit_price);
+  }, [campaignData, aiAnalysis]);
 
   // Managing isThereEnoughStaked
   useEffect(() => {
@@ -96,77 +86,50 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
 
     setIsFileAnalyzeLoading(true);
 
-    // Initializing Pinata
-    const pinata = new PinataSDK({
-      pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT,
-      pinataGateway: process.env.NEXT_PUBLIC_PINATA_GATEWAY,
-    });
-
-    // Uploading Data to IPFS
-    let fileCID = "";
+    // Sending Analyzation Request
     try {
-      const upload = (await pinata.upload.file(file)) as {
-        IpfsHash: string;
-        PinSize: number;
-        Timestamp: string;
-      };
+      const formData = new FormData();
 
-      fileCID = upload.IpfsHash;
-    } catch (error) {
-      return setIsFileAnalyzeLoading(false);
-    }
+      formData.append("campaignId", campaignData.id.toString());
+      formData.append("file", file);
 
-    // Resetting Analyzting States
-    setAnalyzedDataLength(null);
-    setAnalyzedDataQuality(null);
-
-    // Analyzing Data with help of AI
-    try {
       const response = await fetch("/api/ai", {
         method: "POST",
-        headers: {},
-        body: JSON.stringify({
-          fileCID: fileCID,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
-        console.error("Error:", await response.text());
-        return setIsFileAnalyzeLoading(false);
+        throw new Error(
+          "Response is not okay from API: " + (await response.text())
+        );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as AIAnalysisResponse;
 
-      const contentLength = data.length;
-      const qualityScore = data.score;
-
-      // Update States
-      setAnalyzedDataLength(contentLength);
-      setAnalyzedDataQuality(qualityScore);
-      setUploadedDataCID(fileCID);
-      setIsFileAnalyzeLoading(false);
+      setAIAnalysis(data);
     } catch (error) {
-      console.error("Error on AI analyzing: ", error);
-      return setIsFileAnalyzeLoading(false);
+      console.error("Error on analyzing file: ", error);
     }
+
+    setIsFileAnalyzeLoading(false);
   };
 
   const handleSubmitButton = async () => {
     if (!isRequirementsMatched) return;
     if (isFileAnalyzeLoading || isSubmitLoading) return;
 
-    if (!analyzedDataLength || !analyzedDataQuality || !possibleEarnedTokens)
-      return;
+    if (!aiAnalysis || !possibleEarnedTokens) return;
 
     if (!isThereEnoughStaked) return;
 
-    setIsSubmitLoading(true)
+    setIsSubmitLoading(true);
 
     const response = await addContribution({
       campaignId: campaignData.id,
-      data: uploadedDataCID,
-      dataCount: analyzedDataLength,
-      verified: true,
+      dataCount: aiAnalysis.contentLength,
+      store_key: aiAnalysis.ipfsCID,
+      score: aiAnalysis.score.toString(),
+      sign: aiAnalysis.signature,
     });
 
     if (!response) {
@@ -231,18 +194,18 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
                   <div id="length" className="mt-1 flex gap-1 text-small ">
                     <div className="text-default-500">Length: </div>
                     <div className="text-sm font-bold">
-                      {analyzedDataLength === null
+                      {aiAnalysis === null
                         ? "Waiting for data."
-                        : analyzedDataLength + " Words"}
+                        : aiAnalysis.contentLength + " Words"}
                     </div>
                   </div>
 
                   <div id="quality" className="flex gap-1 text-small ">
                     <div className="text-default-500">Quality: </div>
                     <div className="text-sm font-bold">
-                      {analyzedDataQuality === null
+                      {aiAnalysis === null
                         ? "Waiting for data."
-                        : analyzedDataQuality + "%"}
+                        : aiAnalysis.score + "%"}
                     </div>
                   </div>
 
