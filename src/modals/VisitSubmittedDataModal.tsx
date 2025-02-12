@@ -1,4 +1,5 @@
 import { SubmittedDataDocData } from "@/types/SubmitData";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   Button,
   Modal,
@@ -26,35 +27,132 @@ export function VisitSubmittedDataModal({
 
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
+  const { signMessage, account } = useWallet();
+
   const handleDownloadButton = async () => {
-    const fileURL =
-      process.env.NEXT_PUBLIC_IPFS_SUFFIX + "/" + submittedDataDocData.dataCID;
     setIsDownloadLoading(true);
 
+    const signData = await createSignedMessage();
+    if (!signData) {
+      console.error("Error: Failed to create signData");
+      return setIsDownloadLoading(false);
+    }
+
+    const response = await sendGetDataRequest(signData);
+    if (!response) {
+      console.error("Error: Failed to get data");
+      return setIsDownloadLoading(false);
+    }
+
+    const cleanedData = cleanData(response);
+    if (!cleanedData) {
+      console.error("Error: Failed to clean data");
+      return setIsDownloadLoading(false);
+    }
+
+    const downloadResult = downloadData(cleanedData);
+    if (!downloadResult) {
+      console.error("Error: Failed to download data");
+      return setIsDownloadLoading(false);
+    }
+
+    setIsDownloadLoading(false);
+    setIsOpen(false);
+  };
+
+  const createSignedMessage = async () => {
+    const nonce = Math.random().toString(36).substring(2, 15);
+    const message =
+      "Please sign this message to access the data. \n(Nonce: " + nonce + ")";
+
     try {
-      const response = await fetch(fileURL);
+      const response = await signMessage({
+        message,
+        nonce: nonce,
+      });
+
+      const signature = response.signature.toString();
+      const fullMessage = response.fullMessage;
+
+      return {
+        signature: signature,
+        fullMessage: fullMessage,
+      };
+    } catch (error) {
+      console.error("Error: Failed to sign message: ", error);
+      return false;
+    }
+  };
+
+  const sendGetDataRequest = async (signData: {
+    signature: string;
+    fullMessage: string;
+  }) => {
+    if (!account) return false;
+
+    try {
+      const response = await fetch("/api/getData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          publicKey: account.publicKey,
+          signature: signData.signature,
+          fullMessage: signData.fullMessage,
+          campaignId: submittedDataDocData.campaignId,
+        }),
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to fetch file");
+        console.error("Error: Failed to get data", await response.text());
+        return false;
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const result = (await response.json()) as { data: string };
 
+      return result.data;
+    } catch (error) {
+      console.error("Error: Failed to get data", error);
+      return false;
+    }
+  };
+
+  const cleanData = (data: string) => {
+    try {
+      const cleanedJSON = JSON.parse(JSON.parse(data)) as JSON;
+      return JSON.stringify(cleanedJSON);
+    } catch (error) {
+      console.error("Error: Failed to clean data", error);
+      return false;
+    }
+  };
+
+  const downloadData = (data: string) => {
+    try {
+      // Create a Blob with the JSON data
+      const blob = new Blob([data], { type: "application/json" });
+
+      // Create a temporary URL for the Blob
+      const url = URL.createObjectURL(blob);
+
+      // Create a temporary anchor element
       const a = document.createElement("a");
       a.href = url;
-      a.download = submittedDataDocData.dataCID;
+      a.download = "data.json"; // Set the filename
+
+      // Trigger the download
       document.body.appendChild(a);
       a.click();
 
       // Cleanup
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-      setIsDownloadLoading(false);
-      setIsOpen(false);
+      return true;
     } catch (error) {
-      console.error("Error downloading the file:", error);
-      setIsDownloadLoading(false);
+      console.error("Error: Failed to download data", error);
+      return false;
     }
   };
 

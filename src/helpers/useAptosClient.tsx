@@ -29,6 +29,7 @@ export function useAptosClient() {
       custom: Network.DEVNET,
       testnet: Network.TESTNET,
       mainnet: Network.MAINNET,
+      devnet: Network.DEVNET,
     };
 
     return networkMap[networkFromAdaptor.name as keyof typeof networkMap];

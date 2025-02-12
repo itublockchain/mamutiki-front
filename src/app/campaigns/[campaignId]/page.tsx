@@ -19,6 +19,12 @@ export default function Home() {
 
   const { getCampaignData, isAptosClientReady } = useAptosClient();
 
+  useEffect(() => {
+    if (!isAptosClientReady || !id) return;
+
+    getInitialCampaignData();
+  }, [isAptosClientReady, id]);
+
   const getInitialCampaignData = async () => {
     if (typeof id !== "string") {
       setCampaignData("not-exist");
@@ -31,20 +37,12 @@ export default function Home() {
       return console.error("Error getting campaign data");
     }
 
-    console.log("Campaign data: ", campaignData);
-
     setCampaignData(campaignData);
   };
 
   const handleSubmitButton = () => {
     setIsSubmitDataModalOpen(true);
   };
-
-  useEffect(() => {
-    if (!isAptosClientReady || !id) return;
-
-    getInitialCampaignData();
-  }, [isAptosClientReady, id]);
 
   if (campaignData === null)
     return (

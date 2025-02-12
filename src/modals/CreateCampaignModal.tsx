@@ -153,8 +153,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       title: title,
       description: description,
       dataSpec: dataSpec,
-      rewardPool: Number(stakedBalance) * 100000000,
-      unitPrice: Number(unitPrice) * 100000000,
+      rewardPool: Number(BigInt(Math.round(Number(stakedBalance) * 100000000))),
+      unitPrice: Number(BigInt(Math.round(Number(unitPrice) * 100000000))),
     });
 
     if (!result) {

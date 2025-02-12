@@ -1,44 +1,20 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createCipheriv, createHash, randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "crypto";
 
-import {
-  Account,
-  Aptos,
-  AptosConfig,
-  Ed25519PrivateKey,
-  Network,
-} from "@aptos-labs/ts-sdk";
-import { GetCampaignFunctionResponse } from "@/types/Contract";
+import { Account, Ed25519PrivateKey } from "@aptos-labs/ts-sdk";
 
-import { PinataSDK } from "pinata-web3";
 import { AIAnalysisResponse } from "@/types/API";
+import { PinataSDK } from "pinata-web3";
 
-const parseCampaignResponse = (response: any): GetCampaignFunctionResponse => {
-  const hexToUtf8 = (hexString: string) => {
-    if (hexString.startsWith("0x")) {
-      hexString = hexString.slice(2);
-    }
-    return Buffer.from(hexString, "hex").toString("utf-8");
-  };
-
-  return {
-    id: Number(response.id),
-    title: hexToUtf8(response.title),
-    description: hexToUtf8(response.description),
-    creator: response.creator,
-    data_spec: hexToUtf8(response.data_spec),
-    reward_pool: Number(response.reward_pool) / 100000000,
-    remaining_reward: Number(response.remaining_reward) / 100000000,
-    unit_price: Number(response.unit_price) / 100000000,
-    active: response.active,
-  };
-};
+import { aptosClient } from "@/helpers/api/aptosClient";
+import {
+  functionAccessStringCreator,
+  parseCampaignResponse,
+} from "@/helpers/api/campaignHelpers";
 
 async function getCampaignData(campaignId: number) {
   try {
-    const aptosClient = new Aptos(new AptosConfig({ network: Network.DEVNET }));
-
     const functionAccessString = functionAccessStringCreator(
       "CampaignManager",
       "get_campaign"
@@ -178,6 +154,49 @@ async function signData(
   }
 }
 
+async function encryptContent(content: string) {
+  const key = process.env.MAIN_ENCRYPTION_KEY || "";
+  if (!key) {
+    console.error("No main encryption key found");
+    return false;
+  }
+
+  const keyBuffer = Buffer.from(key, "hex");
+
+  try {
+    const iv = randomBytes(16);
+    const cipher = createCipheriv("aes-256-cbc", keyBuffer, iv);
+
+    const encrypted = Buffer.concat([
+      cipher.update(content, "utf-8"),
+      cipher.final(),
+    ]);
+    return iv.toString("hex") + ":" + encrypted.toString("hex");
+  } catch (error) {
+    console.error("Error encrypting content:", error);
+    return false;
+  }
+}
+
+async function createEncryptedFile(content: string) {
+  const encryptedContent = await encryptContent(content);
+  if (!encryptedContent) {
+    return false;
+  }
+
+  try {
+    const blob = new Blob([encryptedContent], { type: "text/plain" });
+
+    const fileName = Date.now().toString();
+    const newFile = new File([blob], fileName);
+
+    return newFile;
+  } catch (error) {
+    console.error("Error creating encrypted file:", error);
+    return false;
+  }
+}
+
 async function uploadToIPFS(data: File) {
   const pinata = new PinataSDK({
     pinataJwt: process.env.PINATA_JWT,
@@ -192,19 +211,6 @@ async function uploadToIPFS(data: File) {
     return false;
   }
 }
-
-const functionAccessStringCreator = (
-  moduleName: string,
-  functionName: string
-): `${string}::${string}::${string}` | false => {
-  const accountAddress = process.env.NEXT_PUBLIC_ACCOUNT_ADDRESS || "";
-  if (!accountAddress) {
-    console.error("Account address not found from .env file");
-    return false;
-  }
-
-  return `${accountAddress}::${moduleName}::${functionName}`;
-};
 
 export async function POST(request: NextRequest) {
   try {
@@ -263,7 +269,18 @@ export async function POST(request: NextRequest) {
 
     const contentLength = getWordCount(fileContentsString);
 
-    const ipfsCID = await uploadToIPFS(file);
+    // Encrypt the content
+    const encryptedFile = await createEncryptedFile(fileContentsString);
+    if (!encryptedFile) {
+      return NextResponse.json(
+        {
+          error: "Internal Server Error",
+        },
+        { status: 500 }
+      );
+    }
+
+    const ipfsCID = await uploadToIPFS(encryptedFile);
     if (!ipfsCID) {
       return NextResponse.json(
         {

@@ -15,7 +15,19 @@ export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
   >(null);
 
   const getSubmittedDatas = async () => {
-    setSubmittedDatas([]);
+    setSubmittedDatas([
+      {
+        campaignId: campaignId.toString(),
+        creatorId: "01",
+        creationTs: Date.now(),
+        dataCID: "bafkreiddxkswhgwxh4sbu63ikqfya7qsusgczwyvga5nvbibigtqwdbywe",
+        dataLength: 10,
+        dataQuality: 90,
+        earnedTokens: 1,
+        id: "ID-153",
+        sector: "data",
+      },
+    ]);
   };
 
   useEffect(() => {
