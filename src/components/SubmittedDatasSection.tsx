@@ -1,5 +1,5 @@
-import { GetCampaignFunctionResponse } from "@/types/Contract";
-import { SubmittedDataDocData } from "@/types/SubmitData";
+import { useAptosClient } from "@/helpers/useAptosClient";
+import { Contribution, GetCampaignFunctionResponse } from "@/types/Contract";
 import { Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { SubmittedDataPreviewCard } from "./SubmittedDataPreviewCard";
@@ -10,29 +10,24 @@ type Props = {
 };
 
 export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
-  const [submittedDatas, setSubmittedDatas] = useState<
-    SubmittedDataDocData[] | null
-  >(null);
+  const [submittedDatas, setSubmittedDatas] = useState<Contribution[] | null>(
+    null
+  );
+
+  const { isAptosClientReady, getContributions } = useAptosClient();
 
   const getSubmittedDatas = async () => {
-    setSubmittedDatas([
-      {
-        campaignId: campaignId.toString(),
-        creatorId: "01",
-        creationTs: Date.now(),
-        dataCID: "bafkreiddxkswhgwxh4sbu63ikqfya7qsusgczwyvga5nvbibigtqwdbywe",
-        dataLength: 10,
-        dataQuality: 90,
-        earnedTokens: 1,
-        id: "ID-153",
-        sector: "data",
-      },
-    ]);
+    if (!isAptosClientReady || !campaignId) return setSubmittedDatas(null);
+
+    const contributions = await getContributions(campaignId.toString());
+    if (!contributions) return setSubmittedDatas(null);
+
+    setSubmittedDatas(contributions);
   };
 
   useEffect(() => {
-    if (campaignId) getSubmittedDatas();
-  }, [campaignId]);
+    if (campaignId && isAptosClientReady) getSubmittedDatas();
+  }, [campaignId, isAptosClientReady]);
 
   if (!submittedDatas)
     return (
@@ -46,7 +41,7 @@ export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
       {submittedDatas.map((d) => (
         <SubmittedDataPreviewCard
           submittedData={d}
-          key={d.id}
+          key={d.storeCid}
           campaignDocData={campaignDocData}
         />
       ))}

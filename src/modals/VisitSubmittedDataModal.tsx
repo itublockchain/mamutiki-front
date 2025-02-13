@@ -1,4 +1,4 @@
-import { SubmittedDataDocData } from "@/types/SubmitData";
+import { Contribution } from "@/types/Contract";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   Button,
@@ -13,7 +13,7 @@ import { useState } from "react";
 type Props = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  submittedDataDocData: SubmittedDataDocData;
+  submittedDataDocData: Contribution;
 };
 
 export function VisitSubmittedDataModal({
@@ -169,7 +169,7 @@ export function VisitSubmittedDataModal({
                 Submitter ID
               </div>
               <div id="id" className="text-sm">
-                {submittedDataDocData.creatorId}
+                {submittedDataDocData.contributor}
               </div>
             </div>
 
@@ -178,7 +178,7 @@ export function VisitSubmittedDataModal({
                 Date
               </div>
               <div id="id" className="text-sm">
-                {new Date(submittedDataDocData.creationTs).toDateString()}
+                {Date.now().toLocaleString()}
               </div>
             </div>
 
@@ -187,7 +187,7 @@ export function VisitSubmittedDataModal({
                 Quality
               </div>
               <div id="id" className="text-sm">
-                {submittedDataDocData.dataQuality}
+                {submittedDataDocData.score}
               </div>
             </div>
 
@@ -196,25 +196,7 @@ export function VisitSubmittedDataModal({
                 Token Length
               </div>
               <div id="id" className="text-sm">
-                {submittedDataDocData.dataLength}
-              </div>
-            </div>
-
-            <div id="data-id" className="flex flex-col">
-              <div id="name" className="text-default-500 text-xs">
-                Data ID
-              </div>
-              <div id="id" className="text-sm">
-                {submittedDataDocData.id}
-              </div>
-            </div>
-
-            <div id="data-possible-cost" className="flex flex-col">
-              <div id="name" className="text-default-500 text-xs">
-                Possible Cost
-              </div>
-              <div id="id" className="text-sm">
-                {submittedDataDocData.id}
+                {submittedDataDocData.dataCount}
               </div>
             </div>
           </ModalBody>

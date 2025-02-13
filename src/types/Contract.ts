@@ -37,3 +37,11 @@ export type AddContributionFunctionInput = {
   score: string;
   sign: string;
 };
+
+export type Contribution = {
+  campaignId: number;
+  contributor: string;
+  dataCount: number;
+  storeCid: string;
+  score: number;
+};

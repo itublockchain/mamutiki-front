@@ -1,6 +1,5 @@
 import { VisitSubmittedDataModal } from "@/modals/VisitSubmittedDataModal";
-import { GetCampaignFunctionResponse } from "@/types/Contract";
-import { SubmittedDataDocData } from "@/types/SubmitData";
+import { Contribution, GetCampaignFunctionResponse } from "@/types/Contract";
 import {
   Card,
   CardBody,
@@ -12,16 +11,12 @@ import {
   Progress,
 } from "@heroui/react";
 import { useState } from "react";
-
 type Props = {
-  submittedData: SubmittedDataDocData;
+  submittedData: Contribution;
   campaignDocData: GetCampaignFunctionResponse;
 };
 
-export function SubmittedDataPreviewCard({
-  submittedData,
-  campaignDocData,
-}: Props) {
+export function SubmittedDataPreviewCard({ submittedData }: Props) {
   const [isVisitSubmittedDataModalOpen, setIsVisitSubmittedDataModalOpen] =
     useState(false);
 
@@ -42,7 +37,7 @@ export function SubmittedDataPreviewCard({
             alt="heroui logo"
             height={40}
             radius="sm"
-            src={`https://picsum.photos/200/300?random=${submittedData.creatorId}`}
+            src={`https://picsum.photos/200/300?random=${submittedData.contributor}`}
             width={40}
           />
           <div id="data-creator" className="flex flex-col">
@@ -53,7 +48,7 @@ export function SubmittedDataPreviewCard({
               id="submitter-id"
               className=" text-small text-default-1000 text-left"
             >
-              {submittedData.creatorId}
+              {submittedData.contributor}
             </div>
           </div>
         </CardHeader>
@@ -72,7 +67,7 @@ export function SubmittedDataPreviewCard({
               radius="sm"
               showValueLabel={true}
               size="sm"
-              value={submittedData.dataQuality}
+              value={submittedData.score}
             />
           </div>
           <div id="quality-part" className="flex flex-col">
@@ -88,26 +83,8 @@ export function SubmittedDataPreviewCard({
               radius="sm"
               showValueLabel={true}
               size="sm"
-              value={submittedData.dataLength}
+              value={submittedData.score}
               maxValue={100}
-            />
-          </div>
-
-          <div id="cost-part" className="flex flex-col">
-            <Progress
-              classNames={{
-                base: "max-w-md",
-                track: "drop-shadow-md border border-default",
-                indicator: "bg-gradient-to-r from-pink-500 to-yellow-500",
-                label: "tracking-wider font-medium text-default-600",
-                value: "text-foreground/60",
-              }}
-              label="Cost"
-              radius="sm"
-              showValueLabel={true}
-              size="sm"
-              value={submittedData.earnedTokens}
-              maxValue={campaignDocData.reward_pool}
             />
           </div>
         </CardBody>

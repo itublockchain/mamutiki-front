@@ -12,10 +12,10 @@ export const parseCampaignResponse = (
 
   return {
     id: Number(response.id),
-    title: hexToUtf8(response.title),
-    description: hexToUtf8(response.description),
+    title: response.title,
+    description: response.description,
     creator: response.creator,
-    data_spec: hexToUtf8(response.data_spec),
+    data_spec: response.prompt,
     reward_pool: Number(response.reward_pool) / 100000000,
     remaining_reward: Number(response.remaining_reward) / 100000000,
     unit_price: Number(response.unit_price) / 100000000,

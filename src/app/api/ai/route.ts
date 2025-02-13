@@ -16,7 +16,7 @@ import {
 async function getCampaignData(campaignId: number) {
   try {
     const functionAccessString = functionAccessStringCreator(
-      "CampaignManager",
+      "campaign_manager",
       "get_campaign"
     );
     if (!functionAccessString) {

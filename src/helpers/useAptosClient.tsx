@@ -1,12 +1,16 @@
 import {
   AddContributionFunctionInput,
+  Contribution,
   CreateCampaignFunctionInput,
-  GetCampaignFunctionResponse,
 } from "@/types/Contract";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import {
+  functionAccessStringCreator,
+  parseCampaignResponse,
+} from "./api/campaignHelpers";
 
 const ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_ACCOUNT_ADDRESS;
 if (!ACCOUNT_ADDRESS) throw new Error("NEXT_PUBLIC_ACCOUNT_ADDRESS is not set");
@@ -56,13 +60,6 @@ export function useAptosClient() {
     setIsAptosClientReady(true);
   }, [aptosClient, network, isWalletLoading]);
 
-  const functionAccessStringCreator = (
-    moduleName: string,
-    functionName: string
-  ): `${string}::${string}::${string}` => {
-    return `${ACCOUNT_ADDRESS}::${moduleName}::${functionName}`;
-  };
-
   const getParsedError = (error: string) => {
     try {
       return JSON.parse(error) as {
@@ -77,29 +74,6 @@ export function useAptosClient() {
         vm_error_code: "Unknown error",
       };
     }
-  };
-
-  const parseCampaignResponse = (
-    response: any
-  ): GetCampaignFunctionResponse => {
-    const hexToUtf8 = (hexString: string) => {
-      if (hexString.startsWith("0x")) {
-        hexString = hexString.slice(2);
-      }
-      return Buffer.from(hexString, "hex").toString("utf-8");
-    };
-
-    return {
-      id: Number(response.id),
-      title: hexToUtf8(response.title),
-      description: hexToUtf8(response.description),
-      creator: response.creator,
-      data_spec: hexToUtf8(response.data_spec),
-      reward_pool: Number(response.reward_pool) / 100000000,
-      remaining_reward: Number(response.remaining_reward) / 100000000,
-      unit_price: Number(response.unit_price) / 100000000,
-      active: response.active,
-    };
   };
 
   const handleError = (error: unknown, context: string) => {
@@ -119,18 +93,26 @@ export function useAptosClient() {
       return false;
     }
 
+    const accessFunctionString = functionAccessStringCreator(
+      "campaign_manager",
+      "create_campaign"
+    );
+
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
     try {
       const signAndSubmitResult = await signAndSubmitTransaction({
         data: {
-          function: functionAccessStringCreator(
-            "CampaignManager",
-            "create_campaign"
-          ),
+          function: accessFunctionString,
           functionArguments: [
-            Array.from(Buffer.from(functionInput.title)),
-            Array.from(Buffer.from(functionInput.description)),
-            Array.from(Buffer.from(functionInput.dataSpec)),
+            functionInput.title,
+            functionInput.description,
+            functionInput.dataSpec,
             functionInput.unitPrice.toString(),
+            Number(0).toString(),
             functionInput.rewardPool.toString(),
           ],
         },
@@ -147,64 +129,6 @@ export function useAptosClient() {
     }
   };
 
-  const getAllCampaigns = async () => {
-    if (!aptosClient || !network) {
-      toast.error("Network is not set.");
-      return false;
-    }
-
-    try {
-      const response = await aptosClient.view({
-        payload: {
-          function: functionAccessStringCreator(
-            "CampaignManager",
-            "get_all_campaigns"
-          ),
-          functionArguments: [],
-          typeArguments: [],
-        },
-      });
-
-      if (!response[0]) {
-        console.error("Error on getting campaigns: ", response);
-        return false;
-      }
-
-      return (response[0] as any[]).map(parseCampaignResponse);
-    } catch (error) {
-      handleError(error, "fetching campaigns");
-      return false;
-    }
-  };
-
-  const getCampaignData = async (campaignId: string) => {
-    if (!aptosClient || !network) {
-      return false;
-    }
-
-    try {
-      const response = await aptosClient.view({
-        payload: {
-          function: functionAccessStringCreator(
-            "CampaignManager",
-            "get_campaign"
-          ),
-          functionArguments: [campaignId.toString()],
-        },
-      });
-
-      if (!response[0]) {
-        console.error("Error on getting campaign: ", campaignId, response);
-        return false;
-      }
-
-      return parseCampaignResponse(response[0]);
-    } catch (error) {
-      handleError(error, "fetching campaign data");
-      return false;
-    }
-  };
-
   const addContribution = async (
     functionInput: AddContributionFunctionInput
   ) => {
@@ -213,17 +137,23 @@ export function useAptosClient() {
       return false;
     }
 
+    const functionAccessString = functionAccessStringCreator(
+      "contribution_manager",
+      "add_contribution"
+    );
+    if (!functionAccessString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
     try {
       const signAndSubmitResult = await signAndSubmitTransaction({
         data: {
-          function: functionAccessStringCreator(
-            "ContributionManager",
-            "add_contribution"
-          ),
+          function: functionAccessString,
           functionArguments: [
             functionInput.campaignId.toString(),
             functionInput.dataCount.toString(),
-            Array.from(Buffer.from(functionInput.store_key)),
+            functionInput.store_key,
             functionInput.score.toString(),
             Array.from(Buffer.from(functionInput.sign, "hex")),
           ],
@@ -241,11 +171,136 @@ export function useAptosClient() {
     }
   };
 
+  const getAllCampaigns = async () => {
+    if (!aptosClient || !network) {
+      toast.error("Network is not set.");
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator(
+      "campaign_manager",
+      "get_all_campaigns"
+    );
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: accessFunctionString,
+          functionArguments: [],
+          typeArguments: [],
+        },
+      });
+
+      if (!response[0]) {
+        console.error("Error on getting campaigns: ", response);
+        return false;
+      }
+
+      console.log(response[0]);
+
+      return (response[0] as any[]).map(parseCampaignResponse);
+    } catch (error) {
+      handleError(error, "fetching campaigns");
+      return false;
+    }
+  };
+
+  const getCampaignData = async (campaignId: string) => {
+    if (!aptosClient || !network) {
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator(
+      "campaign_manager",
+      "get_campaign"
+    );
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: accessFunctionString,
+          functionArguments: [campaignId.toString()],
+        },
+      });
+
+      if (!response[0]) {
+        console.error("Error on getting campaign: ", campaignId, response);
+        return false;
+      }
+
+      return parseCampaignResponse(response[0]);
+    } catch (error) {
+      handleError(error, "fetching campaign data");
+      return false;
+    }
+  };
+
+  const getContributions = async (campaignId: string) => {
+    if (!aptosClient || !network) {
+      toast.error("Network is not set.");
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator(
+      "contribution_manager",
+      "get_campaign_contributions"
+    );
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: accessFunctionString,
+          functionArguments: [campaignId.toString()],
+        },
+      });
+
+      if (!response[0]) {
+        console.error("Error on getting contributions: ", campaignId, response);
+        return false;
+      }
+
+      const contributions = response[0] as {
+        campaign_id: number;
+        contributor: string;
+        data_count: number;
+        store_cid: string;
+        score: number;
+      }[];
+
+      return contributions.map((c) => {
+        const data: Contribution = {
+          campaignId: Number(c.campaign_id),
+          contributor: c.contributor,
+          dataCount: Number(c.data_count),
+          score: Number(c.score),
+          storeCid: c.store_cid,
+        };
+        return data;
+      });
+    } catch (error) {
+      handleError(error, "fetching contributions");
+      return false;
+    }
+  };
+
   return {
     createCampaign,
     getAllCampaigns,
     getCampaignData,
     addContribution,
     isAptosClientReady,
+    getContributions,
   };
 }
