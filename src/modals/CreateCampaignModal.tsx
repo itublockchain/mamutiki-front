@@ -9,7 +9,10 @@ import {
   ModalHeader,
   Textarea,
 } from "@heroui/react";
-import { useState } from "react";
+
+import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
+
+import { useEffect, useState } from "react";
 
 type Props = {
   isModalOpen: boolean;
@@ -25,6 +28,13 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   const [stakedBalance, setStakedBalance] = useState("");
   const [dataSpec, setDataSpec] = useState("");
 
+  const [dataKeyPair, setDataKeyPair] = useState<null | {
+    publicKey: number[];
+    privateKey: string;
+  }>(null);
+
+  const [isPrivateKeyDownloaded, setIsPrivateKeyDownloaded] = useState(false);
+
   const [validationErrors, setValidationErrors] = useState({
     title: "",
     description: "",
@@ -36,6 +46,14 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   const [creationError, setCreationError] = useState("");
 
   const { createCampaign } = useAptosClient();
+
+  // Managing creating new key pair on modal open.
+  useEffect(() => {
+    if (!isModalOpen) {
+      resetInputs();
+    }
+    handleCreateNewDataKeyPair();
+  }, [isModalOpen]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -118,11 +136,103 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     setDataSpec(e.target.value);
   };
 
+  const handleCreateNewDataKeyPair = async () => {
+    if (isCreateLoading) return;
+
+    setDataKeyPair(null);
+    setIsPrivateKeyDownloaded(false);
+
+    try {
+      const bufferToHex = (buffer: ArrayBuffer) =>
+        Array.from(new Uint8Array(buffer))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+
+      const algorithm = {
+        name: "RSA-OAEP",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256",
+      };
+
+      const keyPair = await window.crypto.subtle.generateKey(
+        algorithm,
+        true, // key'ler dışa aktarılabilir
+        ["encrypt", "decrypt"]
+      );
+
+      const publicKeyDer = await window.crypto.subtle.exportKey(
+        "spki",
+        keyPair.publicKey
+      );
+
+      const privateKeyDer = await window.crypto.subtle.exportKey(
+        "pkcs8",
+        keyPair.privateKey
+      );
+
+      // Converting to hex for user readability.
+      const privateKeyHex = bufferToHex(privateKeyDer);
+
+      // Converting public to number array for contract interaction compatibility.
+      const publicKeyNumberArray = Array.from(new Uint8Array(publicKeyDer));
+
+      return setDataKeyPair({
+        publicKey: publicKeyNumberArray,
+        privateKey: privateKeyHex,
+      });
+    } catch (error) {
+      console.error("Error on handleCreateNewKeyButton: ", error);
+
+      setIsPrivateKeyDownloaded(false);
+      return setDataKeyPair(null);
+    }
+  };
+
+  const handleDownloadPrivateKeyButton = () => {
+    const privateKey = dataKeyPair?.privateKey;
+    if (!privateKey) {
+      console.error("Error: Private key not found");
+      return setIsPrivateKeyDownloaded(false);
+    }
+
+    try {
+      // Create a Blob with the JSON data
+      const blob = new Blob([privateKey], {
+        type: "text/plain",
+      });
+
+      // Create a temporary URL for the Blob
+      const url = URL.createObjectURL(blob);
+
+      // Create a temporary anchor element
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "key" + "-" + Date.now().toString() + ".txt"; // Set the filename
+
+      // Trigger the download
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setIsPrivateKeyDownloaded(true);
+    } catch (error) {
+      console.error("Error: Failed to download data", error);
+      return setIsPrivateKeyDownloaded(false);
+    }
+  };
+
   const handleCancelButton = () => {
     setIsModalOpen(false);
+    resetInputs();
   };
 
   const handleCreateButton = async () => {
+    if (isCreateLoading) return;
+
     setCreationError("");
 
     if (
@@ -147,6 +257,16 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       });
     }
 
+    if (!dataKeyPair) {
+      console.error("Please create a key pair to continue.");
+      return setCreationError("Please create a key pair");
+    }
+
+    if (!isPrivateKeyDownloaded) {
+      console.error("Please download the private key to continue.");
+      return setCreationError("Please download the private key.");
+    }
+
     setIsCreateLoading(true);
 
     const result = await createCampaign({
@@ -155,6 +275,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       dataSpec: dataSpec,
       rewardPool: Number(BigInt(Math.round(Number(stakedBalance) * 100000000))),
       unitPrice: Number(BigInt(Math.round(Number(unitPrice) * 100000000))),
+      publicKeyForEncryption: dataKeyPair.publicKey,
     });
 
     if (!result) {
@@ -174,6 +295,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     setUnitPrice("");
     setStakedBalance("");
     setDataSpec("");
+    setDataKeyPair(null);
+    setIsPrivateKeyDownloaded(false);
   };
 
   return (
@@ -230,6 +353,26 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               value={dataSpec}
             />
 
+            <div className=" text-xs text-warning-500">
+              Please save your private key below. You will need it to decrypt
+              the data you receive. Note that this key will be shown only once.
+            </div>
+            <Input
+              value={
+                (dataKeyPair && dataKeyPair.privateKey.slice(0, 30) + "...") ||
+                "Please create a key pair"
+              }
+              label="Private Key"
+              endContent={
+                <Button onPress={handleDownloadPrivateKeyButton}>
+                  <ArrowDownCircleIcon />
+                </Button>
+              }
+              disabled
+            />
+
+            <Button onPress={handleCreateNewDataKeyPair}>Create New Key</Button>
+
             {creationError && (
               <div className="text-xs text-red-500">{creationError}</div>
             )}
@@ -246,7 +389,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             <Button
               color="primary"
               onPress={handleCreateButton}
-              isDisabled={isCreateLoading}
+              isDisabled={isCreateLoading || !isPrivateKeyDownloaded}
               isLoading={isCreateLoading}
             >
               Create

@@ -3,11 +3,8 @@ import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { CampaignCard } from "./CampaignCard";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
-type Props = {};
-
-export function CurrentCampaigns({}: Props) {
+export function CurrentCampaigns() {
   const [currentCampaigns, setCurrentCampaigns] = useState<
     GetCampaignFunctionResponse[] | null
   >(null);

@@ -1,6 +1,4 @@
-type Props = {};
-
-export function AnonymousMainPage({}: Props) {
+export function AnonymousMainPage() {
   return (
     <div
       id="not-logged-root"

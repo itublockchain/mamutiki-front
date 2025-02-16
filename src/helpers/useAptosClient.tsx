@@ -2,6 +2,7 @@ import {
   AddContributionFunctionInput,
   Contribution,
   CreateCampaignFunctionInput,
+  GetCampaignFunctionContractResponse,
 } from "@/types/Contract";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
@@ -12,8 +13,9 @@ import {
   parseCampaignResponse,
 } from "./api/campaignHelpers";
 
-const ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_ACCOUNT_ADDRESS;
-if (!ACCOUNT_ADDRESS) throw new Error("NEXT_PUBLIC_ACCOUNT_ADDRESS is not set");
+const ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX;
+if (!ACCOUNT_ADDRESS)
+  throw new Error("NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX is not set");
 
 export function useAptosClient() {
   const {
@@ -93,10 +95,10 @@ export function useAptosClient() {
       return false;
     }
 
-    const accessFunctionString = functionAccessStringCreator(
-      "campaign_manager",
-      "create_campaign"
-    );
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "create_campaign",
+    });
 
     if (!accessFunctionString) {
       console.error("Error creating function access string. See other logs.");
@@ -114,6 +116,7 @@ export function useAptosClient() {
             functionInput.unitPrice.toString(),
             Number(0).toString(),
             functionInput.rewardPool.toString(),
+            functionInput.publicKeyForEncryption,
           ],
         },
       });
@@ -137,10 +140,10 @@ export function useAptosClient() {
       return false;
     }
 
-    const functionAccessString = functionAccessStringCreator(
-      "contribution_manager",
-      "add_contribution"
-    );
+    const functionAccessString = functionAccessStringCreator({
+      moduleName: "contribution_manager",
+      functionName: "add_contribution",
+    });
     if (!functionAccessString) {
       console.error("Error creating function access string. See other logs.");
       return false;
@@ -155,6 +158,7 @@ export function useAptosClient() {
             functionInput.dataCount.toString(),
             functionInput.store_key,
             functionInput.score.toString(),
+            functionInput.keyForDecryption,
             Array.from(Buffer.from(functionInput.sign, "hex")),
           ],
         },
@@ -177,10 +181,10 @@ export function useAptosClient() {
       return false;
     }
 
-    const accessFunctionString = functionAccessStringCreator(
-      "campaign_manager",
-      "get_all_campaigns"
-    );
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "get_all_campaigns",
+    });
     if (!accessFunctionString) {
       console.error("Error creating function access string. See other logs.");
       return false;
@@ -200,9 +204,9 @@ export function useAptosClient() {
         return false;
       }
 
-      console.log(response[0]);
-
-      return (response[0] as any[]).map(parseCampaignResponse);
+      return (response[0] as GetCampaignFunctionContractResponse[]).map(
+        parseCampaignResponse
+      );
     } catch (error) {
       handleError(error, "fetching campaigns");
       return false;
@@ -214,10 +218,10 @@ export function useAptosClient() {
       return false;
     }
 
-    const accessFunctionString = functionAccessStringCreator(
-      "campaign_manager",
-      "get_campaign"
-    );
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "get_campaign",
+    });
     if (!accessFunctionString) {
       console.error("Error creating function access string. See other logs.");
       return false;
@@ -236,7 +240,9 @@ export function useAptosClient() {
         return false;
       }
 
-      return parseCampaignResponse(response[0]);
+      return parseCampaignResponse(
+        response[0] as GetCampaignFunctionContractResponse
+      );
     } catch (error) {
       handleError(error, "fetching campaign data");
       return false;
@@ -249,10 +255,10 @@ export function useAptosClient() {
       return false;
     }
 
-    const accessFunctionString = functionAccessStringCreator(
-      "contribution_manager",
-      "get_campaign_contributions"
-    );
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "contribution_manager",
+      functionName: "get_campaign_contributions",
+    });
     if (!accessFunctionString) {
       console.error("Error creating function access string. See other logs.");
       return false;
@@ -277,6 +283,7 @@ export function useAptosClient() {
         data_count: number;
         store_cid: string;
         score: number;
+        key_for_decryption: string;
       }[];
 
       return contributions.map((c) => {
@@ -286,6 +293,7 @@ export function useAptosClient() {
           dataCount: Number(c.data_count),
           score: Number(c.score),
           storeCid: c.store_cid,
+          keyForDecryption: c.key_for_decryption,
         };
         return data;
       });

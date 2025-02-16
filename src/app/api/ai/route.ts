@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createCipheriv, createHash, randomBytes } from "crypto";
+import { createCipheriv, createHash, randomBytes, subtle } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { Account, Ed25519PrivateKey } from "@aptos-labs/ts-sdk";
@@ -12,13 +12,14 @@ import {
   functionAccessStringCreator,
   parseCampaignResponse,
 } from "@/helpers/api/campaignHelpers";
+import { GetCampaignFunctionContractResponse } from "@/types/Contract";
 
 async function getCampaignData(campaignId: number) {
   try {
-    const functionAccessString = functionAccessStringCreator(
-      "campaign_manager",
-      "get_campaign"
-    );
+    const functionAccessString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "get_campaign",
+    });
     if (!functionAccessString) {
       throw new Error("Error creating function access string. See other logs.");
     }
@@ -35,7 +36,9 @@ async function getCampaignData(campaignId: number) {
       return false;
     }
 
-    return parseCampaignResponse(response[0]);
+    return parseCampaignResponse(
+      response[0] as GetCampaignFunctionContractResponse
+    );
   } catch (error) {
     console.error("Error getting campaign data:", error);
     return false;
@@ -59,10 +62,7 @@ async function getScoreFromAI(fileContentsString: string, dataSpec: string) {
     process.env.GOOGLE_GENERATIVE_AI_API_KEY as string
   );
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-pro-exp-02-05",
-    generationConfig: {
-      temperature: 1,
-    },
+    model: "gemini-2.0-flash-thinking-exp-01-21",
   });
 
   try {
@@ -93,11 +93,128 @@ function getWordCount(str: string): number {
   return words.length;
 }
 
-async function signData(
+async function encryptContent(content: string) {
+  const key = randomBytes(32); // Generate a 256-bit (32-byte) key
+  const iv = randomBytes(16); // Generate a 16-byte IV
+
+  try {
+    const cipher = createCipheriv("aes-256-cbc", key, iv);
+    const encrypted = Buffer.concat([
+      cipher.update(content, "utf-8"),
+      cipher.final(),
+    ]);
+
+    return {
+      encryptedData: iv.toString("hex") + ":" + encrypted.toString("hex"),
+      aesKey: key.toString("hex"), // You'll need this key for decryption
+    };
+  } catch (error) {
+    console.error("Error encrypting content:", error);
+    return false;
+  }
+}
+
+async function createEncryptedFile(content: string) {
+  const encryptionResult = await encryptContent(content);
+  if (!encryptionResult) {
+    return false;
+  }
+
+  try {
+    const blob = new Blob([encryptionResult.encryptedData], {
+      type: "text/plain",
+    });
+
+    const fileName = Date.now().toString();
+    const newFile = new File([blob], fileName);
+
+    return {
+      file: newFile,
+      aesKey: encryptionResult.aesKey,
+    };
+  } catch (error) {
+    console.error("Error creating encrypted file:", error);
+    return false;
+  }
+}
+
+/**
+ *
+ * @param campaignId
+ * @returns Public key in hex format.
+ */
+async function getPublicKeyForEncryption(campaignId: number) {
+  try {
+    const functionAccessString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "get_public_key_for_encryption",
+    });
+    if (!functionAccessString) {
+      throw new Error("Error creating function access string. See other logs.");
+    }
+
+    const response = await aptosClient.view({
+      payload: {
+        function: functionAccessString,
+        functionArguments: [campaignId.toString()],
+      },
+    });
+
+    if (!response[0]) {
+      console.error("Error on getting public key: ", campaignId, response);
+      return false;
+    }
+
+    return response[0] as string;
+  } catch (error) {
+    console.error("Error getting public key for encryption:", error);
+    return false;
+  }
+}
+
+/**
+ *
+ * @param hexPublicKey
+ * @param aesKey
+ * @returns encrypted AES key in utf-8 format.
+ */
+async function encryptAESKey(hexPublicKey: string, aesKey: string) {
+  try {
+    // Remove "0x" prefix if present.
+    if (hexPublicKey.startsWith("0x")) {
+      hexPublicKey = hexPublicKey.slice(2);
+    }
+    // Convert the hex string to an ArrayBuffer.
+    const keyBuffer = Buffer.from(hexPublicKey, "hex");
+
+    const importedPublicKey = await subtle.importKey(
+      "spki",
+      keyBuffer,
+      { name: "RSA-OAEP", hash: "SHA-256" },
+      true,
+      ["encrypt"]
+    );
+
+    const data = new TextEncoder().encode(aesKey);
+    const encrypted = await subtle.encrypt(
+      { name: "RSA-OAEP" },
+      importedPublicKey,
+      data
+    );
+
+    return Buffer.from(encrypted).toString("hex");
+  } catch (error) {
+    console.error("Error encrypting content:", error);
+    return false;
+  }
+}
+
+function signData(
   campaignId: number,
   dataCount: number,
   ipfsCID: string,
-  score: number
+  score: number,
+  encryptedAESKeyHex: string
 ) {
   try {
     // Convert parameters
@@ -105,9 +222,11 @@ async function signData(
     const dataCountBigInt = BigInt(dataCount); // Ensure u64 format
     const scoreBigInt = BigInt(score);
     const storeKey = Buffer.from(ipfsCID, "utf-8"); // Adjust encoding if needed
+    const encryptedAESKey = Buffer.from(encryptedAESKeyHex, "utf-8");
 
     // Retrieve and validate private key
-    const privateKeyHex = process.env.PRIVATE_KEY;
+    const privateKeyHex =
+      process.env.TRUSTED_WALLET_PRIVATE_KEY_WITH_OUT_0X_PREFIX;
     if (
       !privateKeyHex ||
       privateKeyHex.length !== 64 ||
@@ -122,7 +241,9 @@ async function signData(
     const account = Account.fromPrivateKey({ privateKey, legacy: false });
 
     // Manually serialize the data into a buffer
-    const message = Buffer.alloc(8 + 8 + 8 + storeKey.length + 8); // Allocate buffer
+    const message = Buffer.alloc(
+      8 + 8 + 8 + storeKey.length + 8 + 8 + encryptedAESKey.length
+    ); // Allocate buffer
 
     // Serialize campaignId (u64) at position 0
     message.writeBigUInt64LE(campaignIdBigInt, 0);
@@ -139,6 +260,14 @@ async function signData(
     // Serialize score (u64) after storeKey
     message.writeBigUInt64LE(scoreBigInt, 24 + storeKey.length);
 
+    // Serialize encryptedAESKey length (u64) after score
+    message.writeBigUInt64LE(
+      BigInt(encryptedAESKey.length),
+      storeKey.length + 32
+    );
+    // Serialize encryptedAESKey length (u64) after score
+    encryptedAESKey.copy(message, storeKey.length + 40);
+
     // Hash the serialized message using SHA-256
     const messageHash = createHash("sha256").update(message).digest();
 
@@ -147,52 +276,12 @@ async function signData(
     const signatureHex = Buffer.from(signature).toString("hex");
 
     // Return signature for Move test function
+
+    console.log("Signature:", signatureHex);
+
     return signatureHex.slice(4);
   } catch (error) {
     console.error("Error signing test data:", error);
-    return false;
-  }
-}
-
-async function encryptContent(content: string) {
-  const key = process.env.MAIN_ENCRYPTION_KEY || "";
-  if (!key) {
-    console.error("No main encryption key found");
-    return false;
-  }
-
-  const keyBuffer = Buffer.from(key, "hex");
-
-  try {
-    const iv = randomBytes(16);
-    const cipher = createCipheriv("aes-256-cbc", keyBuffer, iv);
-
-    const encrypted = Buffer.concat([
-      cipher.update(content, "utf-8"),
-      cipher.final(),
-    ]);
-    return iv.toString("hex") + ":" + encrypted.toString("hex");
-  } catch (error) {
-    console.error("Error encrypting content:", error);
-    return false;
-  }
-}
-
-async function createEncryptedFile(content: string) {
-  const encryptedContent = await encryptContent(content);
-  if (!encryptedContent) {
-    return false;
-  }
-
-  try {
-    const blob = new Blob([encryptedContent], { type: "text/plain" });
-
-    const fileName = Date.now().toString();
-    const newFile = new File([blob], fileName);
-
-    return newFile;
-  } catch (error) {
-    console.error("Error creating encrypted file:", error);
     return false;
   }
 }
@@ -270,8 +359,8 @@ export async function POST(request: NextRequest) {
     const contentLength = getWordCount(fileContentsString);
 
     // Encrypt the content
-    const encryptedFile = await createEncryptedFile(fileContentsString);
-    if (!encryptedFile) {
+    const encryptionResult = await createEncryptedFile(fileContentsString);
+    if (!encryptionResult) {
       return NextResponse.json(
         {
           error: "Internal Server Error",
@@ -280,7 +369,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const ipfsCID = await uploadToIPFS(encryptedFile);
+    const hexPublicKey = await getPublicKeyForEncryption(campaignData.id);
+    if (!hexPublicKey) {
+      return NextResponse.json(
+        {
+          error: "Internal Server Error",
+        },
+        { status: 500 }
+      );
+    }
+
+    const encryptedAESKey = await encryptAESKey(
+      hexPublicKey,
+      encryptionResult.aesKey
+    );
+    if (!encryptedAESKey) {
+      return NextResponse.json(
+        {
+          error: "Internal Server Error",
+        },
+        { status: 500 }
+      );
+    }
+
+    const ipfsCID = await uploadToIPFS(encryptionResult.file);
     if (!ipfsCID) {
       return NextResponse.json(
         {
@@ -290,11 +402,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const signature = await signData(
+    const signature = signData(
       Number(campaignId),
       contentLength,
       ipfsCID,
-      score
+      score,
+      encryptedAESKey
     );
     if (!signature) {
       return NextResponse.json(
@@ -310,6 +423,7 @@ export async function POST(request: NextRequest) {
       contentLength: contentLength,
       ipfsCID: ipfsCID,
       score: score,
+      keyForDecryption: encryptedAESKey,
       signature: signature,
     };
 

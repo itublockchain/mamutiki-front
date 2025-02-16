@@ -1,8 +1,5 @@
 import { ConnectWalletOptionCard } from "@/components/ConnectWalletOptionCard";
-import {
-  groupAndSortWallets,
-  useWallet,
-} from "@aptos-labs/wallet-adapter-react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   Modal,
   ModalBody,

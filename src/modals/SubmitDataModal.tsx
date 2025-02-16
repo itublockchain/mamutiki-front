@@ -143,6 +143,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
       dataCount: aiAnalysis.contentLength,
       store_key: aiAnalysis.ipfsCID,
       score: aiAnalysis.score.toString(),
+      keyForDecryption: aiAnalysis.keyForDecryption,
       sign: aiAnalysis.signature,
     });
 

@@ -1,13 +1,15 @@
 import { Contribution } from "@/types/Contract";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   Button,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
+import { createDecipheriv } from "crypto";
+import { PinataSDK } from "pinata-web3";
 import { useState } from "react";
 
 type Props = {
@@ -27,93 +29,128 @@ export function VisitSubmittedDataModal({
 
   const [isDownloadLoading, setIsDownloadLoading] = useState(false);
 
-  const { signMessage, account } = useWallet();
+  const [privateKey, setPrivateKey] = useState<null | string>(null);
 
-  const handleDownloadButton = async () => {
-    setIsDownloadLoading(true);
-
-    const signData = await createSignedMessage();
-    if (!signData) {
-      console.error("Error: Failed to create signData");
-      return setIsDownloadLoading(false);
+  const handleOnFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      console.warn("No file selected.");
+      setPrivateKey(null);
+      return;
     }
 
-    const response = await sendGetDataRequest(signData);
-    if (!response) {
-      console.error("Error: Failed to get data");
-      return setIsDownloadLoading(false);
-    }
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      const privateKeyFromFile = e.target?.result as string | null;
 
-    const cleanedData = cleanData(response);
-    if (!cleanedData) {
-      console.error("Error: Failed to clean data");
-      return setIsDownloadLoading(false);
-    }
+      if (!privateKeyFromFile) {
+        console.error("Error: Failed to read private key from file.");
+        setPrivateKey(null);
+        return;
+      }
 
-    const downloadResult = downloadData(cleanedData);
-    if (!downloadResult) {
-      console.error("Error: Failed to download data");
-      return setIsDownloadLoading(false);
-    }
+      setPrivateKey(privateKeyFromFile);
+    };
 
-    setIsDownloadLoading(false);
-    setIsOpen(false);
+    reader.onerror = () => {
+      console.error(
+        "Error: FileReader encountered an error while reading the file."
+      );
+      setPrivateKey(null);
+    };
+
+    reader.readAsText(file);
   };
 
-  const createSignedMessage = async () => {
-    const nonce = Math.random().toString(36).substring(2, 15);
-    const message =
-      "Please sign this message to access the data. \n(Nonce: " + nonce + ")";
-
+  const handleDownloadedEncryptedData = async (dataCID: string) => {
     try {
-      const response = await signMessage({
-        message,
-        nonce: nonce,
+      const pinata = new PinataSDK({
+        pinataJwt: process.env.PINATA_JWT,
+        pinataGateway: process.env.NEXT_PUBLIC_PINATA_GATEWAY,
       });
 
-      const signature = response.signature.toString();
-      const fullMessage = response.fullMessage;
+      const data = (await pinata.gateways.get(dataCID)).data;
+      if (!data) {
+        console.error("Error: Failed to get data from IPFS", dataCID);
+        return false;
+      }
 
-      return {
-        signature: signature,
-        fullMessage: fullMessage,
-      };
+      return data.toString();
     } catch (error) {
-      console.error("Error: Failed to sign message: ", error);
+      console.error("Error: Failed to get data from IPFS", error);
       return false;
     }
   };
 
-  const sendGetDataRequest = async (signData: {
-    signature: string;
-    fullMessage: string;
-  }) => {
-    if (!account) return false;
-
+  const handleDecryptEncryptedAESKey = async (
+    encryptedAESKeyHex: string,
+    hexPrivateKey: string
+  ) => {
     try {
-      const response = await fetch("/api/getData", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          publicKey: account.publicKey,
-          signature: signData.signature,
-          fullMessage: signData.fullMessage,
-          campaignId: submittedDataDocData.campaignId,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Error: Failed to get data", await response.text());
-        return false;
+      // Remove "0x" prefix if present
+      if (hexPrivateKey.startsWith("0x")) {
+        hexPrivateKey = hexPrivateKey.slice(2);
       }
 
-      const result = (await response.json()) as { data: string };
+      // Convert the hex private key to ArrayBuffer
+      const keyBuffer = Buffer.from(hexPrivateKey, "hex");
 
-      return result.data;
+      // Import the private key
+      const importedPrivateKey = await crypto.subtle.importKey(
+        "pkcs8", // Format of the private key
+        keyBuffer,
+        { name: "RSA-OAEP", hash: "SHA-256" },
+        true,
+        ["decrypt"]
+      );
+
+      const encryptedBuffer = Buffer.from(encryptedAESKeyHex, "hex");
+
+      // Decrypt the AES key
+      const decryptedBuffer = await crypto.subtle.decrypt(
+        { name: "RSA-OAEP" },
+        importedPrivateKey,
+        encryptedBuffer
+      );
+
+      // Convert decrypted data to string (AES key)
+      return new TextDecoder().decode(decryptedBuffer);
     } catch (error) {
-      console.error("Error: Failed to get data", error);
+      console.error("Error: Failed to decrypt AES key: ", error);
+      return false;
+    }
+  };
+
+  const handleDecryptEncryptedContentWithDecryptedAESKey = async (
+    encryptedContent: string,
+    decryptedAesKey: string
+  ) => {
+    try {
+      const contentParts = encryptedContent.split(":");
+
+      const ivPart = contentParts.shift();
+      if (!ivPart) {
+        throw new Error("IV not found");
+      }
+
+      const iv = Buffer.from(ivPart, "hex");
+      const encryptedPart = Buffer.from(contentParts.join(":"), "hex");
+
+      const keyBuffer = Buffer.from(decryptedAesKey, "hex");
+      const decipher = createDecipheriv(
+        "aes-256-cbc",
+        Buffer.from(keyBuffer),
+        iv
+      );
+
+      const decrypted = Buffer.concat([
+        decipher.update(encryptedPart),
+        decipher.final(),
+      ]);
+
+      return decrypted.toString("utf-8");
+    } catch (error) {
+      console.error("Error decrypting content:", error);
       return false;
     }
   };
@@ -128,7 +165,7 @@ export function VisitSubmittedDataModal({
     }
   };
 
-  const downloadData = (data: string) => {
+  const downloadDecryptedContentToComputer = (data: string) => {
     try {
       // Create a Blob with the JSON data
       const blob = new Blob([data], { type: "application/json" });
@@ -156,6 +193,54 @@ export function VisitSubmittedDataModal({
     }
   };
 
+  const handleDownloadButton = async () => {
+    if (isDownloadLoading) return;
+    if (privateKey === null) return;
+
+    setIsDownloadLoading(true);
+
+    const encryptedData = await handleDownloadedEncryptedData(
+      submittedDataDocData.storeCid
+    );
+    if (!encryptedData) {
+      return setIsDownloadLoading(false);
+    }
+
+    const aesKey = await handleDecryptEncryptedAESKey(
+      submittedDataDocData.keyForDecryption,
+      privateKey
+    );
+    if (!aesKey) {
+      console.error("Error: Failed to decrypt AES key.");
+      return setIsDownloadLoading(false);
+    }
+
+    const decryptedContent =
+      await handleDecryptEncryptedContentWithDecryptedAESKey(
+        encryptedData,
+        aesKey
+      );
+    if (!decryptedContent) {
+      console.error("Error: Failed to decrypt content.");
+      return setIsDownloadLoading(false);
+    }
+
+    const cleanedData = cleanData(decryptedContent);
+    if (!cleanedData) {
+      console.error("Error: Failed to clean data.");
+      return setIsDownloadLoading(false);
+    }
+
+    const isDownloaded = downloadDecryptedContentToComputer(cleanedData);
+    if (!isDownloaded) {
+      console.error("Error: Failed to download data.");
+      return setIsDownloadLoading(false);
+    }
+
+    setIsDownloadLoading(false);
+    setIsOpen(false);
+  };
+
   return (
     <>
       <Modal isOpen={isOpen} onOpenChange={handleCancelButton}>
@@ -170,15 +255,6 @@ export function VisitSubmittedDataModal({
               </div>
               <div id="id" className="text-sm">
                 {submittedDataDocData.contributor}
-              </div>
-            </div>
-
-            <div id="data-date" className="flex flex-col">
-              <div id="name" className="text-default-500 text-xs">
-                Date
-              </div>
-              <div id="id" className="text-sm">
-                {Date.now().toLocaleString()}
               </div>
             </div>
 
@@ -199,6 +275,8 @@ export function VisitSubmittedDataModal({
                 {submittedDataDocData.dataCount}
               </div>
             </div>
+
+            <Input type="file" accept=".txt" onChange={handleOnFileChange} />
           </ModalBody>
           <ModalFooter>
             <Button color="danger" variant="light" onPress={handleCancelButton}>
@@ -208,6 +286,7 @@ export function VisitSubmittedDataModal({
               color="primary"
               onPress={handleDownloadButton}
               isLoading={isDownloadLoading}
+              disabled={privateKey === null}
             >
               Download
             </Button>

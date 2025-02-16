@@ -1,8 +1,6 @@
 import { CurrentCampaigns } from "./CurrentCampaigns";
 
-type Props = {};
-
-export function SignedMainPage({}: Props) {
+export function SignedMainPage() {
   return (
     <div className="mt-10">
       <CurrentCampaigns />

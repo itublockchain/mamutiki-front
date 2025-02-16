@@ -1,15 +1,11 @@
-import { GetCampaignFunctionResponse } from "@/types/Contract";
+import {
+  GetCampaignFunctionContractResponse,
+  GetCampaignFunctionResponse,
+} from "@/types/Contract";
 
 export const parseCampaignResponse = (
-  response: any
+  response: GetCampaignFunctionContractResponse
 ): GetCampaignFunctionResponse => {
-  const hexToUtf8 = (hexString: string) => {
-    if (hexString.startsWith("0x")) {
-      hexString = hexString.slice(2);
-    }
-    return Buffer.from(hexString, "hex").toString("utf-8");
-  };
-
   return {
     id: Number(response.id),
     title: response.title,
@@ -23,11 +19,28 @@ export const parseCampaignResponse = (
   };
 };
 
-export const functionAccessStringCreator = (
-  moduleName: string,
-  functionName: string
-): `${string}::${string}::${string}` | false => {
-  const accountAddress = process.env.NEXT_PUBLIC_ACCOUNT_ADDRESS || "";
+type FunctionAccessStringCreatorProps =
+  | {
+      moduleName: "campaign_manager";
+      functionName:
+        | "create_campaign"
+        | "get_all_campaigns"
+        | "get_campaign"
+        | "get_public_key_for_encryption";
+    }
+  | {
+      moduleName: "contribution_manager";
+      functionName: "add_contribution" | "get_campaign_contributions";
+    };
+
+export const functionAccessStringCreator = ({
+  functionName,
+  moduleName,
+}: FunctionAccessStringCreatorProps):
+  | `${string}::${string}::${string}`
+  | false => {
+  const accountAddress =
+    process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX || "";
   if (!accountAddress) {
     console.error("Account address not found from .env file");
     return false;

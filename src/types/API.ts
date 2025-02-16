@@ -3,5 +3,6 @@ export type AIAnalysisResponse = {
   contentLength: number;
   ipfsCID: string;
   score: number;
+  keyForDecryption: string;
   signature: string;
 };

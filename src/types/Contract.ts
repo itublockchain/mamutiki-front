@@ -9,6 +9,8 @@ export type CreateCampaignFunctionInput = {
   unitPrice: number;
 
   rewardPool: number;
+
+  publicKeyForEncryption: number[];
 };
 
 export type GetCampaignFunctionInput = {
@@ -20,7 +22,7 @@ export type GetCampaignFunctionResponse = {
   title: string;
   description: string;
   creator: string;
-  data_spec: any;
+  data_spec: string;
   reward_pool: number;
   remaining_reward: number;
   unit_price: number;
@@ -35,6 +37,7 @@ export type AddContributionFunctionInput = {
   dataCount: number;
   store_key: string;
   score: string;
+  keyForDecryption: string;
   sign: string;
 };
 
@@ -44,4 +47,17 @@ export type Contribution = {
   dataCount: number;
   storeCid: string;
   score: number;
+  keyForDecryption: string;
+};
+
+export type GetCampaignFunctionContractResponse = {
+  id: string;
+  title: string;
+  description: string;
+  creator: string;
+  prompt: string;
+  reward_pool: string;
+  remaining_reward: string;
+  unit_price: string;
+  active: boolean;
 };
