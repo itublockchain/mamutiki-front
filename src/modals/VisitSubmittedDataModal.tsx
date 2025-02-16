@@ -65,7 +65,7 @@ export function VisitSubmittedDataModal({
   const handleDownloadedEncryptedData = async (dataCID: string) => {
     try {
       const pinata = new PinataSDK({
-        pinataJwt: process.env.PINATA_JWT,
+        pinataJwt: undefined,
         pinataGateway: process.env.NEXT_PUBLIC_PINATA_GATEWAY,
       });
 
@@ -286,7 +286,7 @@ export function VisitSubmittedDataModal({
               color="primary"
               onPress={handleDownloadButton}
               isLoading={isDownloadLoading}
-              disabled={privateKey === null}
+              isDisabled={privateKey === null}
             >
               Download
             </Button>
