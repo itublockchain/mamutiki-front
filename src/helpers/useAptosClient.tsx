@@ -154,6 +154,7 @@ export function useAptosClient() {
         data: {
           function: functionAccessString,
           functionArguments: [
+            
             functionInput.campaignId.toString(),
             functionInput.dataCount.toString(),
             functionInput.store_key,

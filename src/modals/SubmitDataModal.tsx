@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { AIAnalysisResponse } from "@/types/API";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 type Props = {
   isOpen: boolean;
@@ -36,6 +37,8 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   const { addContribution } = useAptosClient();
+
+  const { account } = useWallet();
 
   // Clearing States Initially
   useEffect(() => {
@@ -107,6 +110,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
 
       formData.append("campaignId", campaignData.id.toString());
       formData.append("file", file);
+      formData.append("dataSenderPublicAddressHex", account?.address || "");
 
       const response = await fetch("/api/ai", {
         method: "POST",

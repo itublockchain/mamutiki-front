@@ -210,6 +210,7 @@ async function encryptAESKey(hexPublicKey: string, aesKey: string) {
 }
 
 function signData(
+  dataSenderPublicAddressHex: string,
   campaignId: number,
   dataCount: number,
   ipfsCID: string,
@@ -218,6 +219,10 @@ function signData(
 ) {
   try {
     // Convert parameters
+    const sender = Buffer.from(
+      dataSenderPublicAddressHex.replace("0x", ""),
+      "hex"
+    );
     const campaignIdBigInt = BigInt(campaignId); // Ensure u64 format
     const dataCountBigInt = BigInt(dataCount); // Ensure u64 format
     const scoreBigInt = BigInt(score);
@@ -242,31 +247,33 @@ function signData(
 
     // Manually serialize the data into a buffer
     const message = Buffer.alloc(
-      8 + 8 + 8 + storeKey.length + 8 + 8 + encryptedAESKey.length
+      32 + 8 + 8 + 8 + storeKey.length + 8 + 8 + encryptedAESKey.length
     ); // Allocate buffer
 
+    // Serialize sender (bytes) at position 0
+    sender.copy(message, 0);
+
     // Serialize campaignId (u64) at position 0
-    message.writeBigUInt64LE(campaignIdBigInt, 0);
+    message.writeBigUInt64LE(campaignIdBigInt, 32);
 
     // Serialize dataCount (u64) at position 0
-    message.writeBigUInt64LE(dataCountBigInt, 8);
+    message.writeBigUInt64LE(dataCountBigInt, 40);
 
     // Serialize storeKey length (u64) at position 8
-    message.writeBigUInt64LE(BigInt(storeKey.length), 16);
-
+    message.writeBigUInt64LE(BigInt(storeKey.length), 48);
     // Serialize storeKey (bytes) at position 16
-    storeKey.copy(message, 24);
+    storeKey.copy(message, 56);
 
     // Serialize score (u64) after storeKey
-    message.writeBigUInt64LE(scoreBigInt, 24 + storeKey.length);
+    message.writeBigUInt64LE(scoreBigInt, 56 + storeKey.length);
 
     // Serialize encryptedAESKey length (u64) after score
     message.writeBigUInt64LE(
       BigInt(encryptedAESKey.length),
-      storeKey.length + 32
+      storeKey.length + 64
     );
     // Serialize encryptedAESKey length (u64) after score
-    encryptedAESKey.copy(message, storeKey.length + 40);
+    encryptedAESKey.copy(message, storeKey.length + 72);
 
     // Hash the serialized message using SHA-256
     const messageHash = createHash("sha256").update(message).digest();
@@ -276,9 +283,6 @@ function signData(
     const signatureHex = Buffer.from(signature).toString("hex");
 
     // Return signature for Move test function
-
-    console.log("Signature:", signatureHex);
-
     return signatureHex.slice(4);
   } catch (error) {
     console.error("Error signing test data:", error);
@@ -307,6 +311,9 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const campaignId = formData.get("campaignId") as string;
+    const dataSenderPublicAddressHex = formData.get(
+      "dataSenderPublicAddressHex"
+    ) as string;
 
     if (!file) {
       return NextResponse.json(
@@ -318,6 +325,13 @@ export async function POST(request: NextRequest) {
     if (!campaignId) {
       return NextResponse.json(
         { message: "No campaignId provided" },
+        { status: 400 }
+      );
+    }
+
+    if (!dataSenderPublicAddressHex) {
+      return NextResponse.json(
+        { message: "No dataSenderPublicAddressHex provided" },
         { status: 400 }
       );
     }
@@ -403,6 +417,7 @@ export async function POST(request: NextRequest) {
     }
 
     const signature = signData(
+      dataSenderPublicAddressHex,
       Number(campaignId),
       contentLength,
       ipfsCID,
