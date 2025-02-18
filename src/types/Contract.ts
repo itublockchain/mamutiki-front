@@ -6,6 +6,10 @@ export type CreateCampaignFunctionInput = {
    */
   dataSpec: string;
 
+  minimumScore: number;
+  minimumDataCount: number;
+  minimumContribution: number;
+
   unitPrice: number;
 
   rewardPool: number;
@@ -60,4 +64,9 @@ export type GetCampaignFunctionContractResponse = {
   remaining_reward: string;
   unit_price: string;
   active: boolean;
+};
+
+export type GetSubscriptionStatusResponse = {
+  status: boolean;
+  remainingTime: number;
 };

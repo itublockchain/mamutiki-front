@@ -31,7 +31,10 @@ type FunctionAccessStringCreatorProps =
   | {
       moduleName: "contribution_manager";
       functionName: "add_contribution" | "get_campaign_contributions";
-    };
+    } | {
+      moduleName: "subscription_manager";
+      functionName : "subscribe" | "check_subscription"
+    }
 
 export const functionAccessStringCreator = ({
   functionName,

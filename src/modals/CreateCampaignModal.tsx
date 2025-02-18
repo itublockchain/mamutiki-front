@@ -7,6 +7,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Slider,
   Textarea,
 } from "@heroui/react";
 
@@ -28,6 +29,12 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   const [stakedBalance, setStakedBalance] = useState("");
   const [dataSpec, setDataSpec] = useState("");
 
+  const [minimumQualityScore, setMinimumQualityScore] = useState(70);
+  const [minimumDataCount, setMinimumDataCount] = useState(3);
+
+  const [isPremium, setIsPremium] = useState(false);
+  const [minimumContributonCount, setMinimumContributonCount] = useState(0);
+
   const [dataKeyPair, setDataKeyPair] = useState<null | {
     publicKey: number[];
     privateKey: string;
@@ -41,11 +48,14 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     dataSpec: "",
     unitPrice: "",
     statkedBalance: "",
+    minimumQualityScore: "",
+    minimumDataCount: "",
   });
 
   const [creationError, setCreationError] = useState("");
 
-  const { createCampaign } = useAptosClient();
+  const { createCampaign, isAptosClientReady, getSubscriptionStatus } =
+    useAptosClient();
 
   // Managing creating new key pair on modal open.
   useEffect(() => {
@@ -54,6 +64,14 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     }
     handleCreateNewDataKeyPair();
   }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isAptosClientReady || !isModalOpen) return;
+
+    getSubscriptionStatus().then((status) => {
+      if (status) setIsPremium(status.status);
+    });
+  }, [isModalOpen, isAptosClientReady]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -242,7 +260,9 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       !unitPrice ||
       Number(unitPrice) <= 0 ||
       !stakedBalance ||
-      Number(stakedBalance) <= 0
+      Number(stakedBalance) <= 0 ||
+      !minimumQualityScore ||
+      !minimumDataCount
     ) {
       return setValidationErrors({
         title: !title ? "Title is required" : "",
@@ -254,6 +274,12 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
         unitPrice:
           !unitPrice || Number(unitPrice) <= 0 ? "Unit price is required" : "",
         dataSpec: !dataSpec ? "Data Spec is required" : "",
+        minimumQualityScore: !minimumQualityScore
+          ? "Minimum quality score is required"
+          : "",
+        minimumDataCount: !minimumDataCount
+          ? "Minimum data count is required"
+          : "",
       });
     }
 
@@ -273,6 +299,9 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       title: title,
       description: description,
       dataSpec: dataSpec,
+      minimumScore: minimumQualityScore,
+      minimumDataCount: minimumDataCount,
+      minimumContribution: 0,
       rewardPool: Number(BigInt(Math.round(Number(stakedBalance) * 100000000))),
       unitPrice: Number(BigInt(Math.round(Number(unitPrice) * 100000000))),
       publicKeyForEncryption: dataKeyPair.publicKey,
@@ -301,7 +330,11 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
 
   return (
     <>
-      <Modal isOpen={isModalOpen} onClose={handleCancelButton}>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCancelButton}
+        scrollBehavior="outside"
+      >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
             Create Campaign
@@ -351,6 +384,64 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               placeholder="Enter data spec for your campaign..."
               onChange={handleDataSpecChange}
               value={dataSpec}
+            />
+
+            <Slider
+              className="max-w-md"
+              label="Select a minimum quality score"
+              marks={[
+                {
+                  value: 20,
+                  label: "20%",
+                },
+                {
+                  value: 50,
+                  label: "50%",
+                },
+                {
+                  value: 80,
+                  label: "80%",
+                },
+              ]}
+              value={minimumQualityScore}
+              onChange={(value) => setMinimumQualityScore(value as number)}
+              minValue={0}
+              maxValue={100}
+              step={1}
+            />
+
+            <Slider
+              className="max-w-md"
+              label="Select a minimum data count"
+              value={minimumDataCount}
+              onChange={(value) => setMinimumDataCount(value as number)}
+              minValue={0}
+              step={1}
+            />
+
+            <Slider
+              className="max-w-md"
+              label="Select a minimum contribution count (Premium)"
+              marks={[
+                {
+                  value: 0,
+                  label: "0",
+                },
+                {
+                  value: 5,
+                  label: "5",
+                },
+                {
+                  value: 10,
+                  label: "10",
+                },
+              ]}
+              value={minimumContributonCount}
+              onChange={(value) => setMinimumContributonCount(value as number)}
+              minValue={0}
+              maxValue={20}
+              step={1}
+              isDisabled={!isPremium}
             />
 
             <div className=" text-xs text-warning-500">

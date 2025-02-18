@@ -3,6 +3,7 @@ import {
   Contribution,
   CreateCampaignFunctionInput,
   GetCampaignFunctionContractResponse,
+  GetSubscriptionStatusResponse,
 } from "@/types/Contract";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
@@ -19,6 +20,7 @@ if (!ACCOUNT_ADDRESS)
 
 export function useAptosClient() {
   const {
+    account,
     signAndSubmitTransaction,
     network: networkFromAdaptor,
     isLoading: isWalletLoading,
@@ -114,7 +116,8 @@ export function useAptosClient() {
             functionInput.description,
             functionInput.dataSpec,
             functionInput.unitPrice.toString(),
-            Number(0).toString(),
+            functionInput.minimumContribution.toString(),
+            functionInput.minimumScore.toString(),
             functionInput.rewardPool.toString(),
             functionInput.publicKeyForEncryption,
           ],
@@ -154,7 +157,6 @@ export function useAptosClient() {
         data: {
           function: functionAccessString,
           functionArguments: [
-            
             functionInput.campaignId.toString(),
             functionInput.dataCount.toString(),
             functionInput.store_key,
@@ -304,6 +306,83 @@ export function useAptosClient() {
     }
   };
 
+  const subscribePremium = async () => {
+    if (!aptosClient || !network) {
+      toast.error("Network is not set.");
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "subscription_manager",
+      functionName: "subscribe",
+    });
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    try {
+      const signAndSubmitResult = await signAndSubmitTransaction({
+        data: {
+          function: accessFunctionString,
+          functionArguments: [],
+        },
+      });
+
+      await aptosClient.waitForTransaction({
+        transactionHash: signAndSubmitResult.hash,
+      });
+      toast.success("Subscribed to premium successfully!");
+      return true;
+    } catch (error) {
+      handleError(error, "subscribing to premium");
+      return false;
+    }
+  };
+
+  const getSubscriptionStatus = async () => {
+    if (!aptosClient || !network) {
+      toast.error("Network is not set.");
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "subscription_manager",
+      functionName: "check_subscription",
+    });
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    if (!account?.address) {
+      console.error("Account address not found.");
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: accessFunctionString,
+          functionArguments: [account.address],
+        },
+      });
+
+      const status = (response[0] as boolean) || false;
+      const remainingTime = (response[1] as number) || 0;
+
+      const functionResponse: GetSubscriptionStatusResponse = {
+        status,
+        remainingTime,
+      };
+
+      return functionResponse;
+    } catch (error) {
+      handleError(error, "fetching subscription status");
+      return false;
+    }
+  };
+
   return {
     createCampaign,
     getAllCampaigns,
@@ -311,5 +390,7 @@ export function useAptosClient() {
     addContribution,
     isAptosClientReady,
     getContributions,
+    subscribePremium,
+    getSubscriptionStatus,
   };
 }

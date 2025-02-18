@@ -1,5 +1,6 @@
 import { ConnectWalletModal } from "@/modals/ConnectWalletModal";
 import { CreateCampaignModal } from "@/modals/CreateCampaignModal";
+import SubscribeModal from "@/modals/SubscribeModal";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@heroui/react";
 import Link from "next/link";
@@ -14,6 +15,8 @@ export function Header() {
   const [isConnectWalletModalOpen, setIsConnectWalletModalOpen] =
     useState(false);
 
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+
   const handleDisconnectButton = async () => {
     disconnect();
   };
@@ -24,6 +27,10 @@ export function Header() {
 
   const handleConnectButton = () => {
     setIsConnectWalletModalOpen(true);
+  };
+
+  const handleSubscribeButton = () => {
+    setIsSubscribeModalOpen(true);
   };
 
   return (
@@ -56,6 +63,7 @@ export function Header() {
                 Create Campaign
               </Button>
               <Button onPress={handleDisconnectButton}>Disconnect</Button>
+              <Button onPress={handleSubscribeButton}>Subscribe</Button>
             </div>
           )}
 
@@ -73,6 +81,11 @@ export function Header() {
       <ConnectWalletModal
         isOpen={isConnectWalletModalOpen}
         setIsOpen={setIsConnectWalletModalOpen}
+      />
+
+      <SubscribeModal
+        isOpen={isSubscribeModalOpen}
+        setIsOpen={setIsSubscribeModalOpen}
       />
     </>
   );
