@@ -2,7 +2,7 @@ import { ConnectWalletModal } from "@/modals/ConnectWalletModal";
 import { CreateCampaignModal } from "@/modals/CreateCampaignModal";
 import SubscribeModal from "@/modals/SubscribeModal";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Button } from "@heroui/react";
+import { Image } from "@heroui/react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -16,6 +16,27 @@ export function Header() {
     useState(false);
 
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+
+  const handleStartButton = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const handleSpecsButton = () => {
+    window.scrollTo({
+      top: window.innerHeight * 1,
+      behavior: "smooth",
+    });
+  };
+
+  const handleRoadmapButton = () => {
+    window.scrollTo({
+      top: window.innerHeight * 2,
+      behavior: "smooth",
+    });
+  };
 
   const handleDisconnectButton = async () => {
     disconnect();
@@ -37,38 +58,74 @@ export function Header() {
     <>
       <nav
         id="header-root"
-        className=" sticky top-0 z-[50] w-full flex justify-center items-center h-32"
+        className="fixed top-0 z-50 w-full flex justify-center items-center p-5 gap-5"
       >
         <div
-          id="header"
-          className="flex h-2/3 w-3/6 border border-gray-700 rounded-2xl items-center justify-between px-5 bg-black/70 backdrop-blur-md"
+          id="header-content"
+          className="flex flex-row gap-5 items-center justify-center border border-white/15 rounded-full p-2 px-5 bg-black/50 backdrop-blur-md"
         >
           <Link href="/">
-            <div
-              id="logo"
-              className="text-default text-xl font-bold cursor-pointer"
-            >
-              Datagy
-            </div>
+            <Image src="/icon.png" width={20} />
           </Link>
 
-          <div id="contents" className="flex flex-row gap-6 text-default">
-            <div id="about">About</div>
-            <div id="white-paper">White Paper</div>
-          </div>
+          {!connected && (
+            <>
+              <div
+                id="start-button"
+                className="text-sm cursor-pointer"
+                onClick={handleStartButton}
+              >
+                Start
+              </div>
+              <div
+                id="specs-button"
+                className="text-sm cursor-pointer"
+                onClick={handleSpecsButton}
+              >
+                Specs
+              </div>
+              <div
+                id="roadmap-button"
+                className="text-sm cursor-pointer"
+                onClick={handleRoadmapButton}
+              >
+                Roadmap
+              </div>
 
-          {connected && (
-            <div id="authed-left-part" className="flex gap-2">
-              <Button onPress={handleCreateButtonAtHeader}>
-                Create Campaign
-              </Button>
-              <Button onPress={handleDisconnectButton}>Disconnect</Button>
-              <Button onPress={handleSubscribeButton}>Subscribe</Button>
-            </div>
+              <div
+                id="button"
+                className="flex px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs font-bold"
+                onClick={handleConnectButton}
+              >
+                Connect Wallet
+              </div>
+            </>
           )}
 
-          {!connected && (
-            <Button onPress={handleConnectButton}>Connect Wallet</Button>
+          {connected && (
+            <>
+              <div
+                id="create-button"
+                className="text-sm cursor-pointer"
+                onClick={handleCreateButtonAtHeader}
+              >
+                Create
+              </div>
+              <div
+                id="subscribe-button"
+                className="text-sm cursor-pointer"
+                onClick={handleSubscribeButton}
+              >
+                Subscribe
+              </div>
+              <div
+                id="button"
+                className="flex px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs font-bold"
+                onClick={handleDisconnectButton}
+              >
+                Disconnect
+              </div>
+            </>
           )}
         </div>
       </nav>

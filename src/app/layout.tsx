@@ -6,15 +6,23 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 
+import { Lato } from "next/font/google";
+
+const lato = Lato({
+  weight: "400",
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-lato",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="myTheme">
+    <html lang="en" className={`myTheme ${lato.className}`}>
       <HeadComponent />
-      <body className="relative ">
+      <body className="relative">
         <Providers>
           <Toaster
             position="bottom-right"

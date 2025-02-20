@@ -7,7 +7,7 @@ const heroUIConfig: HeroUIPluginConfig = {
     myTheme: {
       extend: "dark",
       colors: {
-        background: "#121212",
+        background: "black",
         foreground: "white",
         default: {
           DEFAULT: "gray",
@@ -28,7 +28,12 @@ export default {
     "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-lato)"],
+        mono: ["var(--font-lato)"],
+      },
+    },
   },
   darkMode: "class",
   plugins: [heroui(heroUIConfig)],

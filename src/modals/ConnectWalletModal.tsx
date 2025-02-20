@@ -29,7 +29,7 @@ export function ConnectWalletModal({ isOpen, setIsOpen }: Props) {
               Connect Wallet
             </ModalHeader>
             <ModalBody>
-              <div className="flex flex-col gap-5">
+              <div className="grid grid-cols-2 gap-4">
                 {wallets.map((w) => (
                   <ConnectWalletOptionCard
                     wallet={w}

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnonymousMainPage } from "@/components/AnonymousMainPage";
+import LandingPage from "@/components/LandingPage/LandingPage";
 import { GettingAuthStatusPage } from "@/components/GettingAuthStatusPage";
 import { SignedMainPage } from "@/components/SignedMainPage";
 
@@ -10,9 +10,9 @@ export default function Home() {
   const { connected, isLoading } = useWallet();
 
   return (
-    <div className="flex flex-col w-full h-full px-10 py-5 ">
+    <div className="flex flex-col w-full h-full">
       {isLoading && <GettingAuthStatusPage />}
-      {!isLoading && !connected && <AnonymousMainPage />}
+      {!isLoading && !connected && <LandingPage />}
       {!isLoading && connected && <SignedMainPage />}
     </div>
   );

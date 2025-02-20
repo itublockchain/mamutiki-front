@@ -45,6 +45,39 @@ async function getCampaignData(campaignId: number) {
   }
 }
 
+// async function getPremiumStatusOfCampaigner(campaignerPublicAddress: string) {
+//   try {
+//     const functionAccessString = functionAccessStringCreator({
+//       moduleName: "subscription_manager",
+//       functionName: "check_subscription",
+//     });
+//     if (!functionAccessString) {
+//       throw new Error("Error creating function access string. See other logs.");
+//     }
+
+//     const response = await aptosClient.view({
+//       payload: {
+//         function: functionAccessString,
+//         functionArguments: [campaignerPublicAddress],
+//       },
+//     });
+
+//     if (!response[0]) {
+//       console.error(
+//         "Error on getting premium status of campaigner: ",
+//         campaignerPublicAddress,
+//         response
+//       );
+//       return undefined;
+//     }
+
+//     return response[0] as boolean;
+//   } catch (error) {
+//     console.error("Error getting premium status of campaigner:", error);
+//     return undefined;
+//   }
+// }
+
 async function createContentStringData(file: File) {
   try {
     const fileBuffer = Buffer.from(await file.arrayBuffer());
@@ -354,6 +387,16 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // const isPremium = await getPremiumStatusOfCampaigner(campaignData.creator);
+    // if (isPremium === undefined) {
+    //   return NextResponse.json(
+    //     {
+    //       error: "Internal Server Error",
+    //     },
+    //     { status: 500 }
+    //   );
+    // }
 
     // Generate quality score
     const score = await getScoreFromAI(
