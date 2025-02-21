@@ -12,6 +12,9 @@ const heroUIConfig: HeroUIPluginConfig = {
         default: {
           DEFAULT: "gray",
         },
+        primary: {
+          DEFAULT: "yellow",
+        },
         secondary: {
           DEFAULT: "white",
         },

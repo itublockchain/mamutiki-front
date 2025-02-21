@@ -1,7 +1,7 @@
 "use client";
 
-import LandingPage from "@/components/LandingPage/LandingPage";
 import { GettingAuthStatusPage } from "@/components/GettingAuthStatusPage";
+import LandingPage from "@/components/LandingPage/LandingPage";
 import { SignedMainPage } from "@/components/SignedMainPage";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";

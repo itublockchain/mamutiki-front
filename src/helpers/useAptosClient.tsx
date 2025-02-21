@@ -26,43 +26,47 @@ export function useAptosClient() {
     isLoading: isWalletLoading,
   } = useWallet();
 
-  const lastNetworkRef = useRef<Network | null>(null);
-
   const [isAptosClientReady, setIsAptosClientReady] = useState(false);
 
-  const network = useMemo(() => {
+  const aptosConfig = useMemo(() => {
     if (!networkFromAdaptor) return null;
 
-    const networkMap = {
-      custom: Network.DEVNET,
-      testnet: Network.TESTNET,
-      mainnet: Network.MAINNET,
-      devnet: Network.DEVNET,
-    };
+    if (!networkFromAdaptor.url) {
+      console.error("Network URL (Full Node) not found.");
+      return null;
+    }
 
-    return networkMap[networkFromAdaptor.name as keyof typeof networkMap];
+    const newAptosConfig = new AptosConfig({
+      network: Network.CUSTOM,
+      fullnode: networkFromAdaptor.url,
+    });
+
+    return newAptosConfig;
   }, [networkFromAdaptor]);
 
   const aptosClient = useMemo(() => {
-    if (!network || isWalletLoading) return null;
-    return new Aptos(new AptosConfig({ network }));
-  }, [network, isWalletLoading]);
+    if (!aptosConfig || isWalletLoading) return null;
+    return new Aptos(aptosConfig);
+  }, [aptosConfig, isWalletLoading]);
 
-  // Managing lastNetworkRef to prevent multiple toasts.
-  useEffect(() => {
-    if (isWalletLoading || network === lastNetworkRef.current) return;
+  const currentNetworkName = useMemo(() => {
+    const url = networkFromAdaptor?.url;
+    if (!url) return null;
 
-    toast.success(`Network changed to ${network}`);
-    lastNetworkRef.current = network;
-  }, [network, isWalletLoading]);
+    if (url === process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL)
+      return "testnet";
+    else if (url === process.env.NEXT_PUBLIC_MOVEMENT_MAIN_NETWORK_URL)
+      return "mainnet";
+    else return null;
+  }, [networkFromAdaptor]);
 
   // Managing isAptosClientReady state.
   useEffect(() => {
-    if (!aptosClient || !network || isWalletLoading)
+    if (!aptosClient || !aptosConfig || isWalletLoading)
       return setIsAptosClientReady(false);
 
     setIsAptosClientReady(true);
-  }, [aptosClient, network, isWalletLoading]);
+  }, [aptosClient, aptosConfig, isWalletLoading]);
 
   const getParsedError = (error: string) => {
     try {
@@ -92,8 +96,8 @@ export function useAptosClient() {
   };
 
   const createCampaign = async (functionInput: CreateCampaignFunctionInput) => {
-    if (!aptosClient || !network) {
-      toast.error("Network is not set.");
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -138,8 +142,8 @@ export function useAptosClient() {
   const addContribution = async (
     functionInput: AddContributionFunctionInput
   ) => {
-    if (!aptosClient || !network) {
-      toast.error("Network is not set.");
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -179,8 +183,8 @@ export function useAptosClient() {
   };
 
   const getAllCampaigns = async () => {
-    if (!aptosClient || !network) {
-      toast.error("Network is not set.");
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -217,7 +221,8 @@ export function useAptosClient() {
   };
 
   const getCampaignData = async (campaignId: string) => {
-    if (!aptosClient || !network) {
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -253,8 +258,8 @@ export function useAptosClient() {
   };
 
   const getContributions = async (campaignId: string) => {
-    if (!aptosClient || !network) {
-      toast.error("Network is not set.");
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -307,8 +312,8 @@ export function useAptosClient() {
   };
 
   const subscribePremium = async () => {
-    if (!aptosClient || !network) {
-      toast.error("Network is not set.");
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -341,8 +346,8 @@ export function useAptosClient() {
   };
 
   const getSubscriptionStatus = async () => {
-    if (!aptosClient || !network) {
-      toast.error("Network is not set.");
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -392,5 +397,6 @@ export function useAptosClient() {
     getContributions,
     subscribePremium,
     getSubscriptionStatus,
+    currentNetworkName
   };
 }

@@ -2,7 +2,7 @@ import { useAptosClient } from "@/helpers/useAptosClient";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
-import { CampaignCard } from "./CampaignCard";
+import CampaignCard from "./CampaignCard";
 
 export function CurrentCampaigns() {
   const [currentCampaigns, setCurrentCampaigns] = useState<
@@ -34,27 +34,31 @@ export function CurrentCampaigns() {
     getInitialCampaings();
   }, [isAptosClientReady]);
 
-  if (currentCampaigns === null)
-    return (
-      <div className="flex justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
-
   return (
-    <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
-        {currentCampaigns &&
-          currentCampaigns.map((campaign, i) => (
+    <div id="active-campaigns-root" className="flex flex-col gap-5">
+      <div id="title" className="text-2xl font-bold">
+        Active Campaigns
+      </div>
+      {isLoading || currentCampaigns === null ? (
+        <div className="flex w-full">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="grid grid-cols-4">
+          {currentCampaigns.map((campaign) => (
             <CampaignCard
               id={campaign.id}
               staked={campaign.reward_pool}
               unitPrice={campaign.unit_price}
               title={campaign.title}
-              key={i}
+              campaigner={campaign.creator}
+              remainingStakes={campaign.remaining_reward}
+              description={campaign.description}
+              key={campaign.id}
             />
           ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

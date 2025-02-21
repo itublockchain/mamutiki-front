@@ -3,8 +3,8 @@ import React from "react";
 
 export function GettingAuthStatusPage() {
   return (
-    <div className="flex w-full h-full justify-center items-center ">
-      <Spinner size="lg" />
+    <div className="flex w-full h-screen justify-center items-center ">
+      <Spinner size="lg" color="primary" />
     </div>
   );
 }

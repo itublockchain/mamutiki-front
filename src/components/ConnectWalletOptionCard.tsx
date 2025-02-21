@@ -1,13 +1,12 @@
 import { AnyAptosWallet, useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Card, Image } from "@heroui/react";
+import { motion } from "framer-motion";
 import { useState } from "react";
 
 type Props = {
   wallet: AnyAptosWallet;
-  onConnect: () => void;
 };
 
-export function ConnectWalletOptionCard({ wallet, onConnect }: Props) {
+export function ConnectWalletOptionCard({ wallet }: Props) {
   const [loading, setLoading] = useState(false);
 
   const { connect } = useWallet();
@@ -22,18 +21,29 @@ export function ConnectWalletOptionCard({ wallet, onConnect }: Props) {
       console.error("Error on connecting to wallet: ", error);
     }
     setLoading(false);
-    onConnect();
   };
 
   return (
-    <Card
-      isPressable
-      className="flex flex-row w-full items-center gap-3 border border-gray-500 p-3"
-      onPress={handlePress}
+    <motion.div
+      id="wallet-root"
+      className="flex flex-row w-full items-center justify-between border border-yellow-500 rounded-2xl p-2 px-3 cursor-pointer"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={handlePress}
     >
-      <Image src={wallet.icon} className="h-5" />
-      <div className="">{wallet.name}</div>
-      <div className="ml-auto bg-gray-500 p-3 rounded-xl text-xs">Connect</div>
-    </Card>
+      <div
+        id="image-name"
+        className="flex flex-row items-center justify-center gap-2"
+      >
+        <img src={wallet.icon} alt={wallet.name} className="w-5 h-5" />
+        <div className="text-sm">{wallet.name}</div>
+      </div>
+      <div
+        id="connect-button"
+        className="flex text-xs px-3 p-2 bg-yellow-300 rounded-2xl text-black"
+      >
+        Connect
+      </div>
+    </motion.div>
   );
 }

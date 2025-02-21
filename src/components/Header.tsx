@@ -1,13 +1,16 @@
+import { useAptosClient } from "@/helpers/useAptosClient";
 import { ConnectWalletModal } from "@/modals/ConnectWalletModal";
 import { CreateCampaignModal } from "@/modals/CreateCampaignModal";
 import SubscribeModal from "@/modals/SubscribeModal";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Image } from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import Link from "next/link";
 import { useState } from "react";
 
 export function Header() {
   const { connected, disconnect } = useWallet();
+
+  const { currentNetworkName } = useAptosClient();
 
   const [isCreateCampaignModalOpen, setIsCreateCampaignModalOpen] =
     useState(false);
@@ -58,14 +61,25 @@ export function Header() {
     <>
       <nav
         id="header-root"
-        className="fixed top-0 z-50 w-full flex justify-center items-center p-5 gap-5"
+        className={`${
+          connected ? "sticky" : "fixed"
+        } top-0 z-50 w-full flex items-center justify-center p-5 gap-5`}
       >
+        {connected && (
+          <div
+            id="button"
+            className="flex mr-auto px-3 py-2 border border-yellow-300 rounded-2xl text-white text-xs font-bold"
+          >
+            15 MAMU
+          </div>
+        )}
+
         <div
           id="header-content"
           className="flex flex-row gap-5 items-center justify-center border border-white/15 rounded-full p-2 px-5 bg-black/50 backdrop-blur-md"
         >
           <Link href="/">
-            <Image src="/icon.png" width={20} />
+            <img src="/icon.png" width={20} />
           </Link>
 
           {!connected && (
@@ -128,6 +142,19 @@ export function Header() {
             </>
           )}
         </div>
+
+        {connected && (
+          <div
+            id="button"
+            className="flex ml-auto px-3 py-2 border border-yellow-300 rounded-2xl text-white text-xs font-bold"
+          >
+            {currentNetworkName ? (
+              currentNetworkName.toUpperCase()
+            ) : (
+              <Spinner size="sm" />
+            )}
+          </div>
+        )}
       </nav>
 
       <CreateCampaignModal

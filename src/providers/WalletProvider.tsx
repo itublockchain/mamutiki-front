@@ -1,9 +1,9 @@
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
-import { MartianWallet } from "@martianwallet/aptos-wallet-adapter";
+import { NightlyWallet } from "@nightlylabs/aptos-wallet-adapter-plugin";
 import { PropsWithChildren } from "react";
 
 export function WalletProvider({ children }: PropsWithChildren) {
-  const wallets = [new MartianWallet()];
+  const wallets = [new NightlyWallet()];
 
   return (
     <AptosWalletAdapterProvider

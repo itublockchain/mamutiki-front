@@ -482,6 +482,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               onPress={handleCreateButton}
               isDisabled={isCreateLoading || !isPrivateKeyDownloaded}
               isLoading={isCreateLoading}
+              className="text-black"
             >
               Create
             </Button>

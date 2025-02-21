@@ -6,7 +6,9 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
 } from "@heroui/react";
+import { useEffect } from "react";
 
 type Props = {
   isOpen: boolean;
@@ -14,11 +16,15 @@ type Props = {
 };
 
 export function ConnectWalletModal({ isOpen, setIsOpen }: Props) {
-  const { wallets = [] } = useWallet();
+  const { wallets = [], connected, isLoading } = useWallet();
 
   const handleClose = () => {
     setIsOpen(false);
   };
+
+  useEffect(() => {
+    if (connected) handleClose();
+  }, [connected]);
 
   return (
     <>
@@ -29,15 +35,15 @@ export function ConnectWalletModal({ isOpen, setIsOpen }: Props) {
               Connect Wallet
             </ModalHeader>
             <ModalBody>
-              <div className="grid grid-cols-2 gap-4">
-                {wallets.map((w) => (
-                  <ConnectWalletOptionCard
-                    wallet={w}
-                    key={w.name}
-                    onConnect={handleClose}
-                  />
-                ))}
-              </div>
+              {isLoading ? (
+                <Spinner color="warning" />
+              ) : (
+                <div className="flex flex-col gap-5">
+                  {wallets.map((w) => (
+                    <ConnectWalletOptionCard wallet={w} key={w.name} />
+                  ))}
+                </div>
+              )}
             </ModalBody>
             <ModalFooter />
           </>
