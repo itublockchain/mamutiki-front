@@ -1,6 +1,7 @@
+import { Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
 import TextTransition, { presets } from "react-text-transition";
-import AnimatedBackground from "../Background/AnimatedBackground";
+import VantaBackground from "../Background/VantaBackground";
 
 const TEXTS = [
   "Decentralized & Unstoppable Data",
@@ -32,8 +33,10 @@ export default function LandingPart() {
 
   return (
     <>
-      <AnimatedBackground />
-      <div className="flex h-screen w-full relative">
+      {/* <AnimatedBackground /> */}
+      <VantaBackground />
+
+      <div className="flex h-screen w-full relative bg-black/35 ">
         <div
           id="landing-content"
           className="flex flex-col w-full h-full z-20 gap-10 items-center justify-center "
@@ -46,21 +49,21 @@ export default function LandingPart() {
               id="dynamic-title-duo"
               className="flex flex-col justify-center items-center gap-3"
             >
-              <div id="fixed-title" className="text-2xl font-bold">
+              <div id="fixed-title" className="text-3xl font-bold">
                 Power Your AI With
               </div>
               <TextTransition
                 springConfig={presets.wobbly}
                 className="justify-center"
               >
-                <div className="text-5xl font-bold text-center">
+                <div className="bg-gradient-to-r from-[#DAA520] to-[#FFD700] bg-clip-text text-transparent text-5xl text-center font-bold">
                   {TEXTS[index % TEXTS.length]}
                 </div>
               </TextTransition>
             </div>
             <div
               id="description-part"
-              className="text-md text-center max-w-3xl"
+              className="text-md text-center max-w-3xl text-gray-200"
             >
               Empower your AI development by launching custom data campaigns.
               Define your specific data needs and price, then let our

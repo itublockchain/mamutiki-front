@@ -22,14 +22,17 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.1",
-    "react-player": "^2.16.0",
-    "react-text-transition": "^3.1.0"
+    "react-text-transition": "^3.1.0",
+    "three": "^0.173.0",
+    "vanta": "^0.5.24"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.173.0",
+    "@types/video-react": "^0.15.8",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
     "postcss": "^8.5.1",

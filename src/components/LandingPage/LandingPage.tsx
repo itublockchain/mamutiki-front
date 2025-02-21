@@ -1,5 +1,5 @@
-import RoadmapPart from "./RoadmapPart";
 import LandingPart from "./LandingPart";
+import RoadmapPart from "./RoadmapPart";
 import SpecsPart from "./SpecsPart";
 
 export default function LandingPage() {

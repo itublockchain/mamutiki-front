@@ -63,7 +63,7 @@ export function Header() {
         id="header-root"
         className={`${
           connected ? "sticky" : "fixed"
-        } top-0 z-50 w-full flex items-center justify-center p-5 gap-5`}
+        } top-0 z-50 w-full flex items-center justify-center p-5 px-20 gap-5`}
       >
         {connected && (
           <div
@@ -108,7 +108,7 @@ export function Header() {
 
               <div
                 id="button"
-                className="flex px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs font-bold"
+                className="flex px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs"
                 onClick={handleConnectButton}
               >
                 Connect Wallet

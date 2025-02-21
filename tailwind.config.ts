@@ -30,14 +30,6 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ["var(--font-lato)"],
-        mono: ["var(--font-lato)"],
-      },
-    },
-  },
   darkMode: "class",
   plugins: [heroui(heroUIConfig)],
 } satisfies Config;
