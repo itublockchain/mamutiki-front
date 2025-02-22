@@ -7,6 +7,15 @@ import { Spinner } from "@heroui/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from "@heroui/react";
+
+import { Bars3Icon } from "@heroicons/react/24/solid";
+
 export function Header() {
   const { connected, disconnect } = useWallet();
 
@@ -83,12 +92,12 @@ export function Header() {
         id="header-root"
         className={`${
           connected ? "sticky" : "fixed"
-        } top-0 z-50 w-full flex items-center justify-center p-5 px-20 gap-5`}
+        } top-0 z-50 w-full flex items-center justify-center p-5 md:p-5 md:px-20 md:gap-5`}
       >
         {connected && (
           <div
             id="button"
-            className="flex mr-auto px-3 py-2 border justify-center items-center border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
+            className="hidden md:flex mr-auto px-3 py-2 border justify-center items-center border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
           >
             {currentBalance === false ? (
               <Spinner size="sm" />
@@ -102,8 +111,8 @@ export function Header() {
           id="header-content"
           className="flex flex-row gap-5 items-center justify-center border border-white/15 rounded-full p-2 px-5 bg-black/50 backdrop-blur-md"
         >
-          <Link href="/">
-            <img src="/icon.png" width={20} />
+          <Link href="/" className="flex w-5 h-5">
+            <img src="/icon.png" className="w-5 aspect-square rounded-full" />
           </Link>
 
           {!connected && (
@@ -132,10 +141,18 @@ export function Header() {
 
               <div
                 id="button"
-                className="flex px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs"
+                className="hidden md:flex items-center justify-center text-center px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs"
                 onClick={handleConnectButton}
               >
                 Connect Wallet
+              </div>
+
+              <div
+                id="button"
+                className="flex md:hidden p-2 items-center justify-center text-center bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs"
+                onClick={handleConnectButton}
+              >
+                Connect
               </div>
             </>
           )}
@@ -154,15 +171,55 @@ export function Header() {
                 className="text-sm cursor-pointer"
                 onClick={handleSubscribeButton}
               >
-                Subscribe
+                Premium
               </div>
               <div
                 id="button"
-                className="flex px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs font-bold"
+                className="hidden md:flex px-3 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs font-bold"
                 onClick={handleDisconnectButton}
               >
                 Disconnect
               </div>
+
+              <Dropdown className="md:hidden">
+                <DropdownTrigger className="md:hidden">
+                  <div
+                    id="button"
+                    className="flex p-2 bg-yellow-300 rounded-2xl text-black cursor-pointer text-xs font-bold"
+                  >
+                    <Bars3Icon className="w-4 h-4" />
+                  </div>
+                </DropdownTrigger>
+                <DropdownMenu
+                  aria-label="Static Actions"
+                  disabledKeys={["network", "balance"]}
+                >
+                  <DropdownItem key="network" className="cursor-pointer">
+                    {currentNetworkName ? (
+                      currentNetworkName.toUpperCase()
+                    ) : (
+                      <Spinner size="sm" />
+                    )}
+                  </DropdownItem>
+
+                  <DropdownItem key="balance" className="cursor-pointer">
+                    {currentBalance === false ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      `${currentBalance} MAMU`
+                    )}
+                  </DropdownItem>
+
+                  <DropdownItem
+                    key="disconnect"
+                    onPress={handleDisconnectButton}
+                    className="cursor-pointer text-danger-500"
+                    color="danger"
+                  >
+                    Disconnect
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
             </>
           )}
         </div>
@@ -170,7 +227,7 @@ export function Header() {
         {connected && (
           <div
             id="button"
-            className="flex ml-auto px-3 py-2 border border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
+            className="hidden md:flex ml-auto px-3 py-2 border border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
           >
             {currentNetworkName ? (
               currentNetworkName.toUpperCase()

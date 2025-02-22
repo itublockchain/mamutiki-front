@@ -5,7 +5,7 @@ export default function RoadmapPart() {
   return (
     <div
       id="root"
-      className="flex flex-col w-full self-center gap-10 px-20 min-h-screen "
+      className="flex flex-col w-full self-center gap-10 px-5 md:px-20 min-h-screen "
     >
       <div
         id="title"
@@ -13,7 +13,7 @@ export default function RoadmapPart() {
       >
         Our Roadmap
       </div>
-      <div className="grid grid-cols-3 gap-5 min-h-[50vh]">
+      <div className="flex flex-col md:grid md:grid-cols-3 gap-5 min-h-[50vh]">
         <SpecCard
           title="Q1"
           description="We will use our own token."

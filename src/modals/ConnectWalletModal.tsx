@@ -1,5 +1,9 @@
 import { ConnectWalletOptionCard } from "@/components/ConnectWalletOptionCard";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import {
+  AptosStandardSupportedWallet,
+  useWallet,
+  Wallet,
+} from "@aptos-labs/wallet-adapter-react";
 import {
   Modal,
   ModalBody,
@@ -8,7 +12,7 @@ import {
   ModalHeader,
   Spinner,
 } from "@heroui/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   isOpen: boolean;
@@ -18,6 +22,10 @@ type Props = {
 export function ConnectWalletModal({ isOpen, setIsOpen }: Props) {
   const { wallets = [], connected, isLoading } = useWallet();
 
+  const [supportedWallets, setSupportedWallets] = useState<
+    (Wallet | AptosStandardSupportedWallet<string>)[]
+  >([]);
+
   const handleClose = () => {
     setIsOpen(false);
   };
@@ -25,6 +33,15 @@ export function ConnectWalletModal({ isOpen, setIsOpen }: Props) {
   useEffect(() => {
     if (connected) handleClose();
   }, [connected]);
+
+  // Manage Supported Wallets
+  useEffect(() => {
+    // "OKX Wallet" "Razor Wallet" "Nightly"
+    const supportedWalletsFetched = wallets.filter(
+      (w) => w.name === "Razor Wallet" || w.name === "Nightly"
+    );
+    setSupportedWallets(supportedWalletsFetched);
+  }, [wallets]);
 
   return (
     <>
@@ -39,7 +56,7 @@ export function ConnectWalletModal({ isOpen, setIsOpen }: Props) {
                 <Spinner color="warning" />
               ) : (
                 <div className="flex flex-col gap-5">
-                  {wallets.map((w) => (
+                  {supportedWallets.map((w) => (
                     <ConnectWalletOptionCard wallet={w} key={w.name} />
                   ))}
                 </div>

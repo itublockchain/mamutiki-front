@@ -3,16 +3,19 @@ import TextTransition, { presets } from "react-text-transition";
 import VantaBackground from "../Background/VantaBackground";
 
 const TEXTS = [
-  "Decentralized & Unstoppable Data",
+  "Decentralized Data",
+  "Unstoppable Data",
   "High-Quality Data",
-  "Secure & Private Data",
-  "On-Demand Intelligence",
-  "Verifiable & Transparent Data",
+  "Secure Data",
+  "Private Data",
+  "Verifiable Data",
   "AI-Ready Data",
-  "Trusted & Reliable Data",
-  "Scalable & Adaptive Data",
-  "Tailored & Custom Data",
-  "Web3-Enabled Data",
+  "Trusted Data",
+  "Reliable Data",
+  "Scalable Data",
+  "Adaptive Data",
+  "Tailored Data",
+  "Web3 Data",
 ];
 
 export default function LandingPart() {
@@ -35,39 +38,41 @@ export default function LandingPart() {
       {/* <AnimatedBackground /> */}
       <VantaBackground />
 
-      <div className="flex h-screen w-full relative bg-black/35 ">
+      <div className="flex h-screen w-full relative bg-black/35 md:bg-black/35 backdrop-blur-sm md:backdrop-blur-0">
         <div
           id="landing-content"
-          className="flex flex-col w-full h-full z-20 gap-10 items-center justify-center "
+          className="flex flex-col w-full h-full z-20 gap-8 md:gap-10 items-center justify-center p-5 md:p-0 "
         >
           <div
             id="main-texts"
-            className="flex flex-col justify-center items-center gap-8"
+            className="flex flex-col justify-center items-center gap-8 md:gap-8"
           >
             <div
               id="dynamic-title-duo"
-              className="flex flex-col justify-center items-center gap-3"
+              className="flex flex-col justify-center items-center md:gap-3"
             >
-              <div id="fixed-title" className="text-3xl font-bold">
+              <div id="fixed-title" className="text-2xl md:text-3xl font-bold">
                 Power Your AI With
               </div>
               <TextTransition
                 springConfig={presets.wobbly}
                 className="justify-center"
               >
-                <div className="bg-gradient-to-r from-[#DAA520] to-[#FFD700] bg-clip-text text-transparent text-5xl text-center font-bold">
+                <div className="bg-gradient-to-r from-[#DAA520] to-[#FFD700] bg-clip-text text-transparent text-4xl md:text-5xl text-center font-bold">
                   {TEXTS[index % TEXTS.length]}
                 </div>
               </TextTransition>
             </div>
+
             <div
               id="description-part"
-              className="text-md text-center max-w-3xl text-gray-200"
+              className="text-sm md:text-base text-center max-w-3xl md:max-w-2xl text-gray-200"
             >
               Empower your AI development by launching custom data campaigns.
               Define your specific data needs and price, then let our
-              decentralized marketplace on Aptos bring the right data directly
-              to you—ensuring quality, transparency, and rapid innovation.
+              decentralized marketplace on Movement bring the right data
+              directly to you—ensuring quality, transparency, and rapid
+              innovation.
             </div>
           </div>
 

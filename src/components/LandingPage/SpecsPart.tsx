@@ -3,7 +3,10 @@ import SpecCard from "./SpecCard";
 
 export default function SpecsPart() {
   return (
-    <div id="root" className="flex flex-col w-full self-center gap-10 px-20">
+    <div
+      id="root"
+      className="flex flex-col w-full self-center gap-10  px-5 md:px-20"
+    >
       <div
         id="title"
         className="flex justify-center items-center w-full font-extrabold text-4xl"
@@ -12,7 +15,7 @@ export default function SpecsPart() {
       </div>
       <div
         id="content"
-        className="grid grid-cols-4 grid-rows-3 gap-4 min-h-screen"
+        className="flex flex-col gap-5 md:grid md:grid-cols-4 md:grid-rows-3 md:gap-4 min-h-screen"
       >
         {/* Top-Left Large Card */}
         <SpecCard
@@ -22,7 +25,7 @@ export default function SpecsPart() {
         />
 
         {/* Top-Right Split into Two Small Cards */}
-        <div className="grid grid-cols-2 col-span-2 row-span-1 gap-4">
+        <div className="grid md:grid-cols-2 md:col-span-2 row-span-1 gap-4">
           <SpecCard
             title="Lightning Speed"
             description="Built on Aptos, our platform delivers ultra-fast transactions—up to 160,000 TPS—for unmatched performance."

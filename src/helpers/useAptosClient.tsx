@@ -61,6 +61,17 @@ export function useAptosClient() {
     else return null;
   }, [networkFromAdaptor]);
 
+  // If account is null we need to go back to landing page.
+  useEffect(() => {
+    if (!isAptosClientReady) return;
+
+    if (!account) {
+      if (window.location.pathname !== "/") {
+        window.location.href = "/";
+      }
+    }
+  }, [isAptosClientReady, account]);
+
   // Managing isAptosClientReady state.
   useEffect(() => {
     if (!aptosClient || !aptosConfig || isWalletLoading)

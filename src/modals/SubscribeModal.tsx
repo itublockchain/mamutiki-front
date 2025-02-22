@@ -59,15 +59,15 @@ export default function SubscribeModal({ isOpen, setIsOpen }: Props) {
   return (
     <Modal isOpen={isOpen} onClose={handleCancelButton}>
       <ModalContent>
-        <ModalHeader>Subscribe</ModalHeader>
+        <ModalHeader>Premium</ModalHeader>
         <ModalBody>
           <div className="flex flex-col">
             {subscriptionStatus === null && <Spinner />}
             {subscriptionStatus !== null && (
               <>
                 <div id="status" className="flex flex-row gap-2">
-                  <div className=" font-bold"> Subscribe Status: </div>
-                  <div>{subscriptionStatus.status}</div>
+                  <div className="font-bold">Premium Status: </div>
+                  <div>{subscriptionStatus.status ? "Active" : "Inactive"}</div>
                 </div>
                 {subscriptionStatus.status && (
                   <div id="remaining-time" className="flex flex-row gap-2">
