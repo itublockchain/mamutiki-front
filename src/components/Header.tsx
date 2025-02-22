@@ -5,12 +5,13 @@ import SubscribeModal from "@/modals/SubscribeModal";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Spinner } from "@heroui/react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { connected, disconnect } = useWallet();
 
-  const { currentNetworkName } = useAptosClient();
+  const { currentNetworkName, isAptosClientReady, getBalanceOfAccount } =
+    useAptosClient();
 
   const [isCreateCampaignModalOpen, setIsCreateCampaignModalOpen] =
     useState(false);
@@ -19,6 +20,25 @@ export function Header() {
     useState(false);
 
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+
+  const [currentBalance, setCurrentBalance] = useState<number | false>(false);
+
+  useEffect(() => {
+    if (isAptosClientReady) {
+      handleGetCurrentBalance();
+    }
+  }, [isAptosClientReady]);
+
+  const handleGetCurrentBalance = async () => {
+    if (!isAptosClientReady) return setCurrentBalance(false);
+
+    const balance = await getBalanceOfAccount();
+    if (balance === false) {
+      setCurrentBalance(false);
+    } else {
+      setCurrentBalance(balance);
+    }
+  };
 
   const handleStartButton = () => {
     window.scrollTo({
@@ -68,9 +88,13 @@ export function Header() {
         {connected && (
           <div
             id="button"
-            className="flex mr-auto px-3 py-2 border border-yellow-300 rounded-2xl text-white text-xs font-bold"
+            className="flex mr-auto px-3 py-2 border justify-center items-center border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
           >
-            15 MAMU
+            {currentBalance === false ? (
+              <Spinner size="sm" />
+            ) : (
+              `${currentBalance} MAMU`
+            )}
           </div>
         )}
 
@@ -146,7 +170,7 @@ export function Header() {
         {connected && (
           <div
             id="button"
-            className="flex ml-auto px-3 py-2 border border-yellow-300 rounded-2xl text-white text-xs font-bold"
+            className="flex ml-auto px-3 py-2 border border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
           >
             {currentNetworkName ? (
               currentNetworkName.toUpperCase()

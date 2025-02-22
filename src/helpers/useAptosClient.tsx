@@ -7,9 +7,10 @@ import {
 } from "@/types/Contract";
 import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
+  convertBalance,
   functionAccessStringCreator,
   parseCampaignResponse,
 } from "./api/campaignHelpers";
@@ -388,6 +389,41 @@ export function useAptosClient() {
     }
   };
 
+  const getBalanceOfAccount = async () => {
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "mamu",
+      functionName: "get_balance",
+    });
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    if (!account?.address) {
+      console.error("Account address not found.");
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: accessFunctionString,
+          functionArguments: [account.address],
+        },
+      });
+
+      return convertBalance(response[0] as number);
+    } catch (error) {
+      handleError(error, "fetching account balance");
+      return false;
+    }
+  };
+
   return {
     createCampaign,
     getAllCampaigns,
@@ -397,6 +433,7 @@ export function useAptosClient() {
     getContributions,
     subscribePremium,
     getSubscriptionStatus,
-    currentNetworkName
+    currentNetworkName,
+    getBalanceOfAccount,
   };
 }

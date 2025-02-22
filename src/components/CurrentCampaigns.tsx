@@ -44,7 +44,7 @@ export function CurrentCampaigns() {
           <Spinner />
         </div>
       ) : (
-        <div className="grid grid-cols-4">
+        <div className="grid  sm:grid-cols-1  md:grid-cols-3 lg:grid-cols-4 gap-4">
           {currentCampaigns.map((campaign) => (
             <CampaignCard
               id={campaign.id}

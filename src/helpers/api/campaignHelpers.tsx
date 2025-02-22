@@ -12,9 +12,9 @@ export const parseCampaignResponse = (
     description: response.description,
     creator: response.creator,
     data_spec: response.prompt,
-    reward_pool: Number(response.reward_pool) / 100000000,
-    remaining_reward: Number(response.remaining_reward) / 100000000,
-    unit_price: Number(response.unit_price) / 100000000,
+    reward_pool: convertBalance(response.reward_pool),
+    remaining_reward: convertBalance(response.remaining_reward),
+    unit_price: convertBalance(response.unit_price),
     active: response.active,
   };
 };
@@ -31,10 +31,15 @@ type FunctionAccessStringCreatorProps =
   | {
       moduleName: "contribution_manager";
       functionName: "add_contribution" | "get_campaign_contributions";
-    } | {
-      moduleName: "subscription_manager";
-      functionName : "subscribe" | "check_subscription"
     }
+  | {
+      moduleName: "subscription_manager";
+      functionName: "subscribe" | "check_subscription";
+    }
+  | {
+      moduleName: "mamu";
+      functionName: "get_balance" | "get_balances" | "mint";
+    };
 
 export const functionAccessStringCreator = ({
   functionName,
@@ -51,3 +56,24 @@ export const functionAccessStringCreator = ({
 
   return `${accountAddress}::${moduleName}::${functionName}`;
 };
+
+export function convertBalance(rawAmount: number | string, toRaw?: boolean) {
+  const precisionConstant = process.env.NEXT_PUBLIC_DECIMAL_PRECISION || "";
+
+  if (!precisionConstant) {
+    console.error("Precision constant not found from .env file");
+    return 0;
+  }
+
+  // This defines how many decimal places the number will have.
+  const numberedPrecisionConstant = Number(precisionConstant);
+
+  // This is the number we want to format
+  const numberedRawAmount = Number(rawAmount);
+
+  if (toRaw) {
+    return numberedRawAmount * Math.pow(10, numberedPrecisionConstant);
+  }
+
+  return numberedRawAmount / Math.pow(10, numberedPrecisionConstant);
+}

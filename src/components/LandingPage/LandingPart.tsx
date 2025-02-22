@@ -1,4 +1,3 @@
-import { Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
 import TextTransition, { presets } from "react-text-transition";
 import VantaBackground from "../Background/VantaBackground";

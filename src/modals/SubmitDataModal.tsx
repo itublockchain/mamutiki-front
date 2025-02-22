@@ -40,6 +40,8 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
 
   const { account } = useWallet();
 
+  console.log("Campaign Data: ", campaignData);
+
   // Clearing States Initially
   useEffect(() => {
     setIsFileAnalyzeLoading(false);
@@ -172,7 +174,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
             </div>
             <div id="quality-requirement" className="flex gap-1 text-small ">
               <div className="text-default-500">Quality: </div>
-              <div className="text-sm font-bold">0</div>
+              <div className="text-sm font-bold">{campaignData.data_spec}</div>
             </div>
             <div id="length-requirement" className="flex gap-1 text-small ">
               <div className="text-default-500">Length: </div>
@@ -265,6 +267,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
           </Button>
           <Button
             color="primary"
+            className="text-black"
             onPress={handleSubmitButton}
             isLoading={isSubmitLoading || isFileAnalyzeLoading}
             isDisabled={

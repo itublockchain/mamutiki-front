@@ -6,7 +6,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 
-import { Lato, Roboto, Sigmar } from "next/font/google";
+import { Lato } from "next/font/google";
 
 const lato = Lato({
   weight: ["100", "300", "400", "700"],

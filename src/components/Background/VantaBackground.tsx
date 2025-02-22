@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from "react";
 
-//@ts-ignore
+//@ts-expect-error - Vanta.js is not typed
 import HALO from "vanta/dist/vanta.halo.min";
 import * as THREE from "three";
 
-type Props = {};
-
-export default function VantaBackground({}: Props) {
+export default function VantaBackground() {
   const vantaRef = useRef(null);
 
   useEffect(() => {

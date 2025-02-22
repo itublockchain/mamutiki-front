@@ -14,6 +14,7 @@ import {
 import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
 
 import { useEffect, useState } from "react";
+import { convertBalance } from "@/helpers/api/campaignHelpers";
 
 type Props = {
   isModalOpen: boolean;
@@ -302,8 +303,12 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       minimumScore: minimumQualityScore,
       minimumDataCount: minimumDataCount,
       minimumContribution: 0,
-      rewardPool: Number(BigInt(Math.round(Number(stakedBalance) * 100000000))),
-      unitPrice: Number(BigInt(Math.round(Number(unitPrice) * 100000000))),
+      rewardPool: Number(
+        BigInt(Math.round(convertBalance(Number(stakedBalance), true)))
+      ),
+      unitPrice: Number(
+        BigInt(Math.round(convertBalance(Number(unitPrice), true)))
+      ),
       publicKeyForEncryption: dataKeyPair.publicKey,
     });
 

@@ -67,16 +67,18 @@ export default function SubscribeModal({ isOpen, setIsOpen }: Props) {
               <>
                 <div id="status" className="flex flex-row gap-2">
                   <div className=" font-bold"> Subscribe Status: </div>
-                  <div>Active</div>
+                  <div>{subscriptionStatus.status}</div>
                 </div>
-                <div id="remaining-time" className="flex flex-row gap-2">
-                  <div className=" font-bold">Due: </div>
-                  <div>
-                    {new Date(
-                      Date.now() + subscriptionStatus.remainingTime * 1000
-                    ).toDateString()}
+                {subscriptionStatus.status && (
+                  <div id="remaining-time" className="flex flex-row gap-2">
+                    <div className=" font-bold">Due: </div>
+                    <div>
+                      {new Date(
+                        Date.now() + subscriptionStatus.remainingTime * 1000
+                      ).toDateString()}
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
           </div>
@@ -92,6 +94,7 @@ export default function SubscribeModal({ isOpen, setIsOpen }: Props) {
                 subscriptionStatus === null ||
                 subscriptionStatus.status === true
               }
+              className="text-black"
             >
               Subscribe
             </Button>
