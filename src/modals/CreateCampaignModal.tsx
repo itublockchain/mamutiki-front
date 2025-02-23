@@ -448,7 +448,6 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
                   <ArrowDownCircleIcon />
                 </Button>
               }
-              isDisabled
             />
 
             <Button onPress={handleCreateNewDataKeyPair}>Create New Key</Button>
