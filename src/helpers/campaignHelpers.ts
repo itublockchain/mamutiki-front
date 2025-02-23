@@ -48,7 +48,7 @@ export const functionAccessStringCreator = ({
 }: FunctionAccessStringCreatorProps):
   | `${string}::${string}::${string}`
   | false => {
-  let accountAddress =
+  const accountAddress =
     process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX || "";
 
   if (!accountAddress) {

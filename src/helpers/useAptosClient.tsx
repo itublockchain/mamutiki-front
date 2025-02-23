@@ -15,7 +15,7 @@ import {
   parseCampaignResponse,
 } from "./campaignHelpers";
 
-let ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX;
+const ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX;
 
 if (!ACCOUNT_ADDRESS)
   throw new Error("NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX is not set");
