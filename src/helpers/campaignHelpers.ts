@@ -16,6 +16,7 @@ export const parseCampaignResponse = (
     remaining_reward: convertBalance(response.remaining_reward),
     unit_price: convertBalance(response.unit_price),
     active: response.active,
+    minimumScore: Number(response.minimum_score),
   };
 };
 
@@ -47,8 +48,9 @@ export const functionAccessStringCreator = ({
 }: FunctionAccessStringCreatorProps):
   | `${string}::${string}::${string}`
   | false => {
-  const accountAddress =
+  let accountAddress =
     process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX || "";
+
   if (!accountAddress) {
     console.error("Account address not found from .env file");
     return false;

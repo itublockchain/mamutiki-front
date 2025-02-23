@@ -13,9 +13,10 @@ import {
   convertBalance,
   functionAccessStringCreator,
   parseCampaignResponse,
-} from "./api/campaignHelpers";
+} from "./campaignHelpers";
 
-const ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX;
+let ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX;
+
 if (!ACCOUNT_ADDRESS)
   throw new Error("NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX is not set");
 

@@ -40,8 +40,6 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
 
   const { account } = useWallet();
 
-  console.log("Campaign Data: ", campaignData);
-
   // Clearing States Initially
   useEffect(() => {
     setIsFileAnalyzeLoading(false);
@@ -53,7 +51,10 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
   useEffect(() => {
     if (!aiAnalysis) return setIsRequirementsMatched(false);
 
-    if (aiAnalysis.score >= 0 && aiAnalysis.contentLength >= 0) {
+    if (
+      aiAnalysis.score >= campaignData.minimumScore &&
+      aiAnalysis.contentLength >= 0
+    ) {
       setIsRequirementsMatched(true);
     } else {
       setIsRequirementsMatched(false);
@@ -64,7 +65,8 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
   useEffect(() => {
     if (!aiAnalysis) return setPossibleEarnedTokens(0);
 
-    setPossibleEarnedTokens(aiAnalysis.contentLength * campaignData.unit_price);
+    const realUnitPrice = (campaignData.unit_price * aiAnalysis.score) / 100;
+    setPossibleEarnedTokens(aiAnalysis.contentLength * realUnitPrice);
   }, [campaignData, aiAnalysis]);
 
   // Managing isThereEnoughStaked
@@ -173,12 +175,10 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
               Minimum Requirements
             </div>
             <div id="quality-requirement" className="flex gap-1 text-small ">
-              <div className="text-default-500">Quality: </div>
-              <div className="text-sm font-bold">{campaignData.data_spec}</div>
-            </div>
-            <div id="length-requirement" className="flex gap-1 text-small ">
-              <div className="text-default-500">Length: </div>
-              <div className="text-sm font-bold">0</div>
+              <div className="text-default-500">Minimum Quality Score: </div>
+              <div className="text-sm font-bold">
+                {campaignData.minimumScore}
+              </div>
             </div>
 
             <div id="unit-price" className="flex gap-1 text-small ">
@@ -207,10 +207,10 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
             {!isFileAnalyzeLoading && (
               <>
                 <div id="length" className="mt-1 flex gap-1 text-small ">
-                  <div className="text-default-500">Length: </div>
+                  <div className="text-default-500">Data Count: </div>
                   <div className="text-sm font-bold">
                     {aiAnalysis === null
-                      ? "Waiting for data."
+                      ? "Upload Data First."
                       : aiAnalysis.contentLength + " Words"}
                   </div>
                 </div>
@@ -219,7 +219,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
                   <div className="text-default-500">Quality: </div>
                   <div className="text-sm font-bold">
                     {aiAnalysis === null
-                      ? "Waiting for data."
+                      ? "Upload Data First."
                       : aiAnalysis.score + "%"}
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
                   </div>
                   <div className="text-sm font-bold">
                     {possibleEarnedTokens === 0
-                      ? "Waiting for data."
+                      ? "Upload Data First."
                       : possibleEarnedTokens}
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
 
                   <div className="text-sm font-bold">
                     {isThereEnoughStaked === null
-                      ? "Waiting for data."
+                      ? "Upload Data First."
                       : isThereEnoughStaked
                       ? "Yes"
                       : "No"}

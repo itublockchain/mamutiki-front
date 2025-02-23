@@ -14,7 +14,7 @@ import {
 import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
 
 import { useEffect, useState } from "react";
-import { convertBalance } from "@/helpers/api/campaignHelpers";
+import { convertBalance } from "@/helpers/campaignHelpers";
 
 type Props = {
   isModalOpen: boolean;
@@ -31,7 +31,6 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   const [dataSpec, setDataSpec] = useState("");
 
   const [minimumQualityScore, setMinimumQualityScore] = useState(70);
-  const [minimumDataCount, setMinimumDataCount] = useState(3);
 
   const [isPremium, setIsPremium] = useState(false);
   const [minimumContributonCount, setMinimumContributonCount] = useState(0);
@@ -50,7 +49,6 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     unitPrice: "",
     statkedBalance: "",
     minimumQualityScore: "",
-    minimumDataCount: "",
   });
 
   const [creationError, setCreationError] = useState("");
@@ -262,8 +260,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       Number(unitPrice) <= 0 ||
       !stakedBalance ||
       Number(stakedBalance) <= 0 ||
-      !minimumQualityScore ||
-      !minimumDataCount
+      !minimumQualityScore
     ) {
       return setValidationErrors({
         title: !title ? "Title is required" : "",
@@ -277,9 +274,6 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
         dataSpec: !dataSpec ? "Data Spec is required" : "",
         minimumQualityScore: !minimumQualityScore
           ? "Minimum quality score is required"
-          : "",
-        minimumDataCount: !minimumDataCount
-          ? "Minimum data count is required"
           : "",
       });
     }
@@ -301,7 +295,6 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       description: description,
       dataSpec: dataSpec,
       minimumScore: minimumQualityScore,
-      minimumDataCount: minimumDataCount,
       minimumContribution: 0,
       rewardPool: Number(
         BigInt(Math.round(convertBalance(Number(stakedBalance), true)))
@@ -417,15 +410,6 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
 
             <Slider
               className="max-w-md"
-              label="Select a minimum data count"
-              value={minimumDataCount}
-              onChange={(value) => setMinimumDataCount(value as number)}
-              minValue={0}
-              step={1}
-            />
-
-            <Slider
-              className="max-w-md"
               label="Select a minimum contribution count (Premium)"
               marks={[
                 {
@@ -464,7 +448,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
                   <ArrowDownCircleIcon />
                 </Button>
               }
-              disabled
+              isDisabled
             />
 
             <Button onPress={handleCreateNewDataKeyPair}>Create New Key</Button>

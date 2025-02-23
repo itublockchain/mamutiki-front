@@ -7,11 +7,11 @@ import { Account, Ed25519PrivateKey } from "@aptos-labs/ts-sdk";
 import { AIAnalysisResponse } from "@/types/API";
 import { PinataSDK } from "pinata-web3";
 
-import { aptosClient } from "@/helpers/api/aptosClient";
+import { aptosClient } from "@/helpers/aptosClient";
 import {
   functionAccessStringCreator,
   parseCampaignResponse,
-} from "@/helpers/api/campaignHelpers";
+} from "@/helpers/campaignHelpers";
 import { GetCampaignFunctionContractResponse } from "@/types/Contract";
 
 async function getCampaignData(campaignId: number) {
@@ -398,6 +398,8 @@ export async function POST(request: NextRequest) {
     //   );
     // }
 
+    const contentLength = getWordCount(fileContentsString);
+
     // Generate quality score
     const score = await getScoreFromAI(
       fileContentsString,
@@ -413,7 +415,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const contentLength = getWordCount(fileContentsString);
+    if (score < campaignData.minimumScore) {
+      const aiAnalysisResponse: AIAnalysisResponse = {
+        campaignId: Number(campaignId),
+        contentLength: contentLength,
+        ipfsCID: "",
+        score: score,
+        keyForDecryption: "",
+        signature: "",
+      };
+
+      return NextResponse.json(aiAnalysisResponse, { status: 200 });
+    }
 
     // Encrypt the content
     const encryptionResult = await createEncryptedFile(fileContentsString);
