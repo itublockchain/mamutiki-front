@@ -232,10 +232,10 @@ export function CurrentCampaigns() {
             </div>
           </DropdownTrigger>
           <DropdownMenu aria-label="Static Actions" disabledKeys={[sortOption]}>
-            <DropdownItem key="asc-t" onPress={() => setSortOption("asc-t")}>
+            <DropdownItem key="desc-t" onPress={() => setSortOption("desc-t")}>
               First News
             </DropdownItem>
-            <DropdownItem key="desc-t" onPress={() => setSortOption("desc-t")}>
+            <DropdownItem key="asc-t" onPress={() => setSortOption("asc-t")}>
               First Olds
             </DropdownItem>
           </DropdownMenu>

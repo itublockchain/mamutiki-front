@@ -26,21 +26,26 @@ export function useAptosClient() {
     signAndSubmitTransaction,
     network: networkFromAdaptor,
     isLoading: isWalletLoading,
+    connected: isWalletConnected,
   } = useWallet();
 
   const [isAptosClientReady, setIsAptosClientReady] = useState(false);
 
   const aptosConfig = useMemo(() => {
-    if (!networkFromAdaptor) return null;
+    let fullNode = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL;
 
-    if (!networkFromAdaptor.url) {
-      console.error("Network URL (Full Node) not found.");
+    if (networkFromAdaptor && networkFromAdaptor.url) {
+      fullNode = networkFromAdaptor.url;
+    }
+
+    if (!fullNode) {
+      console.error("Full Node URL not found on both .env and adaptor.");
       return null;
     }
 
     const newAptosConfig = new AptosConfig({
       network: Network.CUSTOM,
-      fullnode: networkFromAdaptor.url,
+      fullnode: fullNode,
     });
 
     return newAptosConfig;
@@ -52,8 +57,16 @@ export function useAptosClient() {
   }, [aptosConfig, isWalletLoading]);
 
   const currentNetworkName = useMemo(() => {
-    const url = networkFromAdaptor?.url;
-    if (!url) return null;
+    let url = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL;
+
+    if (networkFromAdaptor?.url) url = networkFromAdaptor?.url;
+
+    if (!url) {
+      console.error(
+        "Network URL (Full Node) not found on both .env and adaptor."
+      );
+      return null;
+    }
 
     if (url === process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL)
       return "testnet";
@@ -61,17 +74,6 @@ export function useAptosClient() {
       return "mainnet";
     else return null;
   }, [networkFromAdaptor]);
-
-  // If account is null we need to go back to landing page.
-  useEffect(() => {
-    if (!isAptosClientReady) return;
-
-    if (!account) {
-      if (window.location.pathname !== "/") {
-        window.location.href = "/";
-      }
-    }
-  }, [isAptosClientReady, account]);
 
   // Managing isAptosClientReady state.
   useEffect(() => {
@@ -111,6 +113,10 @@ export function useAptosClient() {
   const createCampaign = async (functionInput: CreateCampaignFunctionInput) => {
     if (!aptosClient) {
       toast.error("AptosClient is not ready.");
+      return false;
+    }
+
+    if (!isWalletConnected) {
       return false;
     }
 
@@ -157,6 +163,10 @@ export function useAptosClient() {
   ) => {
     if (!aptosClient) {
       toast.error("AptosClient is not ready.");
+      return false;
+    }
+
+    if (!isWalletConnected) {
       return false;
     }
 
@@ -330,6 +340,10 @@ export function useAptosClient() {
       return false;
     }
 
+    if (!isWalletConnected) {
+      return false;
+    }
+
     const accessFunctionString = functionAccessStringCreator({
       moduleName: "subscription_manager",
       functionName: "subscribe",
@@ -361,6 +375,10 @@ export function useAptosClient() {
   const getSubscriptionStatus = async () => {
     if (!aptosClient) {
       toast.error("AptosClient is not ready.");
+      return false;
+    }
+
+    if (!isWalletConnected) {
       return false;
     }
 
@@ -404,6 +422,10 @@ export function useAptosClient() {
   const getBalanceOfAccount = async () => {
     if (!aptosClient) {
       toast.error("AptosClient is not ready.");
+      return false;
+    }
+
+    if (!isWalletConnected) {
       return false;
     }
 
