@@ -17,6 +17,7 @@ export const parseCampaignResponse = (
     unit_price: convertBalance(response.unit_price),
     active: response.active,
     minimumScore: Number(response.minimum_score),
+    createdAt: Number(response.created_at),
   };
 };
 
@@ -27,7 +28,8 @@ type FunctionAccessStringCreatorProps =
         | "create_campaign"
         | "get_all_campaigns"
         | "get_campaign"
-        | "get_public_key_for_encryption";
+        | "get_public_key_for_encryption"
+        | "last_created_campaign";
     }
   | {
       moduleName: "contribution_manager";
@@ -39,7 +41,7 @@ type FunctionAccessStringCreatorProps =
     }
   | {
       moduleName: "mamu";
-      functionName: "get_balance" | "get_balances" | "mint";
+      functionName: "get_balance" | "get_balances" | "mint" | "faucet";
     };
 
 export const functionAccessStringCreator = ({
@@ -48,8 +50,15 @@ export const functionAccessStringCreator = ({
 }: FunctionAccessStringCreatorProps):
   | `${string}::${string}::${string}`
   | false => {
-  const accountAddress =
-    process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX || "";
+  let accountAddress = "";
+
+  if (moduleName === "mamu") {
+    accountAddress =
+      process.env.NEXT_PUBLIC_TOKEN_ACCOUNT_ADDRESS_WITH_0X_PREFIX || "";
+  } else {
+    accountAddress =
+      process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX || "";
+  }
 
   if (!accountAddress) {
     console.error("Account address not found from .env file");

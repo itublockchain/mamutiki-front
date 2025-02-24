@@ -150,10 +150,56 @@ export function useAptosClient() {
       await aptosClient.waitForTransaction({
         transactionHash: signAndSubmitResult.hash,
       });
-      toast.success("Campaign created successfully!");
       return true;
     } catch (error) {
       handleError(error, "creating campaign");
+      return false;
+    }
+  };
+
+  const getLastCreatedCampaignOfCurrentUser = async () => {
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
+      return false;
+    }
+
+    if (!isWalletConnected) {
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "last_created_campaign",
+    });
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    const currentUserAccountAddress = account?.address;
+    if (!currentUserAccountAddress) {
+      console.error("currentUserAccountAddress not found.");
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: accessFunctionString,
+          functionArguments: [currentUserAccountAddress],
+        },
+      });
+
+      if (!response[0]) {
+        console.error("Error on getting last created campaign: ", response);
+        return false;
+      }
+
+      return parseCampaignResponse(
+        response[0] as GetCampaignFunctionContractResponse
+      );
+    } catch (error) {
+      handleError(error, "fetching last created campaign");
       return false;
     }
   };
@@ -458,6 +504,49 @@ export function useAptosClient() {
     }
   };
 
+  const getTokensFromFaucet = async () => {
+    if (!aptosClient) {
+      toast.error("AptosClient is not ready.");
+      return false;
+    }
+
+    if (!isWalletConnected) {
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "mamu",
+      functionName: "faucet",
+    });
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    if (!account?.address) {
+      console.error("Account address not found.");
+      return false;
+    }
+
+    try {
+      const signAndSubmitResult = await signAndSubmitTransaction({
+        data: {
+          function: accessFunctionString,
+          functionArguments: [],
+        },
+      });
+
+      await aptosClient.waitForTransaction({
+        transactionHash: signAndSubmitResult.hash,
+      });
+      toast.success("Tokens received from faucet successfully!");
+      return true;
+    } catch (error) {
+      handleError(error, "receiving tokens from faucet");
+      return false;
+    }
+  };
+
   return {
     createCampaign,
     getAllCampaigns,
@@ -469,5 +558,7 @@ export function useAptosClient() {
     getSubscriptionStatus,
     currentNetworkName,
     getBalanceOfAccount,
+    getTokensFromFaucet,
+    getLastCreatedCampaignOfCurrentUser,
   };
 }

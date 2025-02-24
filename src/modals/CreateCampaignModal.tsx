@@ -15,6 +15,8 @@ import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
 
 import { convertBalance } from "@/helpers/campaignHelpers";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 type Props = {
   isModalOpen: boolean;
@@ -53,8 +55,14 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
 
   const [creationError, setCreationError] = useState("");
 
-  const { createCampaign, isAptosClientReady, getSubscriptionStatus } =
-    useAptosClient();
+  const router = useRouter();
+
+  const {
+    createCampaign,
+    isAptosClientReady,
+    getSubscriptionStatus,
+    getLastCreatedCampaignOfCurrentUser,
+  } = useAptosClient();
 
   // Managing creating new key pair on modal open.
   useEffect(() => {
@@ -310,8 +318,22 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       return setIsCreateLoading(false);
     }
 
+    // Getting last created campaign and redirecting to it.
+    const lastCreatedCampaign = await getLastCreatedCampaignOfCurrentUser();
+    if (!lastCreatedCampaign) {
+      console.error("Failed to get last created campaign of user");
+      return setIsCreateLoading(false);
+    }
+
+    const campaignId = lastCreatedCampaign.id;
+
+    // Redirect to campaign page.
+    router.push(`/app/campaigns/${campaignId}`);
+
     setIsCreateLoading(false);
     resetInputs();
+
+    toast.success("Campaign created successfully!");
 
     return setIsModalOpen(false);
   };

@@ -31,6 +31,7 @@ export type GetCampaignFunctionResponse = {
   unit_price: number;
   active: boolean;
   minimumScore: number;
+  createdAt: number
 };
 
 export type ListAllCampaignsFunctionResponse = GetCampaignFunctionResponse[];

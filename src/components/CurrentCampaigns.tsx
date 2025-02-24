@@ -109,10 +109,10 @@ export function CurrentCampaigns() {
         sorted.sort((a, b) => b.minimumScore - a.minimumScore);
         break;
       case "asc-t":
-        sorted.sort((a, b) => a.id - b.id);
+        sorted.sort((a, b) => a.createdAt - b.createdAt);
         break;
       case "desc-t":
-        sorted.sort((a, b) => b.id - a.id);
+        sorted.sort((a, b) => b.createdAt - a.createdAt);
         break;
     }
 
@@ -253,7 +253,7 @@ export function CurrentCampaigns() {
       </div>
 
       {isLoading || sortedCampaings === null ? (
-        <div className="flex w-full justify-center items-center h-[50vh]"> 
+        <div className="flex w-full justify-center items-center h-[50vh]">
           <Spinner />
         </div>
       ) : (

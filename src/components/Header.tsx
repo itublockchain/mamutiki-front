@@ -20,8 +20,12 @@ import { usePathname } from "next/navigation";
 export function Header() {
   const { connected, disconnect } = useWallet();
 
-  const { currentNetworkName, isAptosClientReady, getBalanceOfAccount } =
-    useAptosClient();
+  const {
+    currentNetworkName,
+    isAptosClientReady,
+    getBalanceOfAccount,
+    getTokensFromFaucet,
+  } = useAptosClient();
 
   const [isCreateCampaignModalOpen, setIsCreateCampaignModalOpen] =
     useState(false);
@@ -105,6 +109,16 @@ export function Header() {
     setIsSubscribeModalOpen(true);
   };
 
+  const handlePressBalanceButton = async () => {
+    setCurrentBalance(false);
+
+    if (!isAptosClientReady) return setCurrentBalance(false);
+
+    await getTokensFromFaucet();
+
+    await handleGetCurrentBalance();
+  };
+
   return (
     <>
       {/**
@@ -131,7 +145,8 @@ export function Header() {
         {routeStatus === "app" && connected && (
           <div
             id="button"
-            className="hidden md:flex mr-auto px-3 py-2 border justify-center items-center border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
+            className="hidden cursor-pointer md:flex mr-auto px-3 py-2 border justify-center items-center border-yellow-300 rounded-2xl text-white text-xs font-bold bg-black/50 backdrop-blur-md"
+            onClick={handlePressBalanceButton}
           >
             {currentBalance === false ? (
               <Spinner size="sm" />
@@ -283,7 +298,7 @@ export function Header() {
 
                   <DropdownMenu
                     aria-label="Static Actions"
-                    disabledKeys={["network", "balance"]}
+                    disabledKeys={["network"]}
                   >
                     <DropdownItem key="network" className="cursor-pointer">
                       {currentNetworkName ? (
@@ -293,7 +308,11 @@ export function Header() {
                       )}
                     </DropdownItem>
 
-                    <DropdownItem key="balance" className="cursor-pointer">
+                    <DropdownItem
+                      key="balance"
+                      className="cursor-pointer"
+                      onPress={handlePressBalanceButton}
+                    >
                       {currentBalance === false ? (
                         <Spinner size="sm" />
                       ) : (
