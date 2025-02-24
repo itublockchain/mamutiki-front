@@ -1,76 +1,71 @@
 import { Input } from "@heroui/react";
+import Link from "next/link";
 import React from "react";
 
 export default function Footer() {
   return (
     <div
       id="rooter"
-      className="flex flex-row flex-wrap md:flex-nowrap items-center justify-between px-20 py-10"
+      className="flex flex-row justify-between items-center p-10"
     >
-      <img src="/logo.png" className="w-32 h-32" />
+      <div id="text" className="text-gray-500 max-w-sm">
+        Lorem Ipsum is simply dummy text of the printing and typesetting
+        industry. Lorem Ipsum has been the industry&apos;s standard dummy text ever
+        since the.
+        <div className="mt-3 text-gray-400">@2025 - All rights reserved</div>
+      </div>
 
-      <div id="resources-part" className="flex flex-col gap-2">
-        <div id="title" className="text-white text-lg font-bold">
+      <div id="resources-part" className="flex flex-col text-gray-500 gap-3">
+        <div id="labal" className="mb-2">
           Resources
         </div>
-        <div id="links" className="flex flex-col gap-1 text-white text-sm">
-          <a href="/about">Leaderboard</a>
-          <a href="/terms">Mamut</a>
-          <a href="/contact">Blog</a>
-          <a href="/privacy" className="text-primary">
-            Contact Us
-          </a>
-        </div>
+
+        <Link href="/">Leaderboard</Link>
+        <Link href="/">Mamut</Link>
+        <Link href="/">Blog</Link>
+        <Link href="/" className="text-primary text-sm">
+          Contact Us
+        </Link>
       </div>
 
-      <div id="social-part" className="flex flex-col gap-2">
-        <div id="title" className="text-white text-lg font-bold">
+      <div
+        id="social-part"
+        className="flex flex-col justify-center text-gray-500 gap-3 mb-5"
+      >
+        <div id="labal" className="mb-2">
           Social
         </div>
-        <div id="links" className="flex flex-col gap-2 text-white text-sm">
-          <a
-            href="https://x.com"
-            id="x-link"
-            className="flex flex-row items-center gap-2"
-          >
-            <img src="/x.png" className="w-5 h-5" />
-            <div>Mamutiki</div>
-          </a>
 
-          <a
-            href="https://telegram.org"
-            id="telegram-link"
-            className="flex flex-row gap-2 items-center"
-          >
-            <img src="/telegram.png" className="w-5 h-5" />
-            <div>Mamutiki</div>
-          </a>
+        <Link href="/" className="flex flex-row gap-2 items-center ">
+          <img src="/x.png" className="w-3 h-3" />X (Twitter)
+        </Link>
 
-          <a
-            href="https://discord.com"
-            id="discord-link"
-            className="flex flex-row gap-2 items-center"
-          >
-            <img src="/discord_logo.png" className="w-5" />
-            <div>Mamutiki</div>
-          </a>
-        </div>
+        <Link href="/" className="flex flex-row gap-2 items-center">
+          <img src="/telegram.png" className="w-4" />
+          Telegram
+        </Link>
+
+        <Link href="/" className="flex flex-row gap-2 items-center">
+          <img src="/discord_logo.png" className="w-4" />
+          Discord
+        </Link>
       </div>
 
-      <div id="stay-in-touch" className="flex flex-col gap-2 mt-5 md:mt-0">
-        <div id="label" className="font-bold">
-          Stay in touch
+      <div
+        id="stay-in-touch"
+        className="flex flex-col bg-white/10 rounded-xl font-bold justify-center gap-3 p-3 pb-4"
+      >
+        Stay in touch
+        <div className="flex flex-row  jusitfy-center gap-1.5">
+          <Input label="helloworld@xyz.com" className="h-5" />
+
+          <div
+            id="subscribe-button"
+            className="h-9 p-1 px-3 flex items-center justify-center bg-primary text-black text-sm rounded-lg cursor-pointer"
+          >
+            Subscribe
+          </div>
         </div>
-        <Input
-          endContent={
-            <div
-              id="submit-button"
-              className="flex justify-center cursor-pointer items-center text-sm bg-primary text-black rounded-lg py-1.5 px-6 transition transform duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              Subscribe
-            </div>
-          }
-        />
       </div>
     </div>
   );
