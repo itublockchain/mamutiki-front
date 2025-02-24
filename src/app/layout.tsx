@@ -50,8 +50,11 @@ export default function RootLayout({
 const HeadComponent = () => (
   <head>
     {/* Basic Metadata */}
-    <title>Notiphar • Find Data You Need</title>
-    <meta name="description" content="Make Every Event Unique" />
+    <title>Datagora • Find Data You Need</title>
+    <meta
+      name="description"
+      content={"Datagora is a platform where you can find data you need."}
+    />
 
     {/* Icons for Light and Dark Modes */}
     <link rel="icon" type="image/png" href="/icon.png" />
@@ -62,9 +65,12 @@ const HeadComponent = () => (
       property="og:description"
       content={"Notiphar is a platform where you can find data you need."}
     />
-    <meta property="og:url" content="https://notiphar.com" />
-    <meta property="og:site_name" content="Notiphar" />
-    <meta property="og:image" content="https://notiphar.com/images/og.png" />
+    <meta property="og:url" content="https://datagora.com" />
+    <meta property="og:site_name" content="Datagora" />
+    <meta
+      property="og:image"
+      content="https://mamutiki.vercel.app/images/og.png"
+    />
     <meta property="og:locale" content="en-US" />
     <meta property="og:type" content="website" />
   </head>
