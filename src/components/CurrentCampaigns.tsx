@@ -1,6 +1,7 @@
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
 import {
+  Divider,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -17,6 +18,8 @@ import {
 } from "@heroicons/react/24/solid";
 
 export function CurrentCampaigns() {
+  const [lineClamped, setLineClamped] = useState(true);
+
   const [currentCampaigns, setCurrentCampaigns] = useState<
     GetCampaignFunctionResponse[] | null
   >(null);
@@ -118,12 +121,22 @@ export function CurrentCampaigns() {
   }, [sortOption, currentCampaigns, searchQuery]);
 
   return (
-    <div id="active-campaigns-root" className="flex flex-col gap-14">
+    <div id="active-campaigns-root" className="flex flex-col gap-10">
       <div id="title-description" className="flex flex-col gap-2">
         <div id="title" className=" text-2xl font-bold">
           Data Marketplace
         </div>
-        <div id="description" className="text-gray-400 text-sm">
+        <div
+          id="description"
+          className="text-gray-400 text-sm"
+          onClick={() => setLineClamped(!lineClamped)}
+          style={{
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: lineClamped ? 3 : undefined,
+          }}
+        >
           The Data Marketplace is a decentralized platform for buying and
           selling data securely and transparently. It enables users to monetize
           their data and access valuable datasets without intermediaries. Users
@@ -137,7 +150,7 @@ export function CurrentCampaigns() {
 
       <div
         id="sorting-bar"
-        className="flex flex-row w-full border-b border-yellow-300/20 gap-2 md:gap-8 items-center px-2 md:px-0"
+        className="flex flex-wrap md:flex-nowrap w-full gap-2 md:gap-8 items-center px-2 md:px-0 md:border-b border-primary/20"
       >
         {/**
          * By Price
@@ -162,7 +175,6 @@ export function CurrentCampaigns() {
             >
               Descending Total Stake
             </DropdownItem>
-
             <DropdownItem key="asc-up" onPress={() => setSortOption("asc-up")}>
               Ascending Unit Price
             </DropdownItem>
@@ -172,7 +184,6 @@ export function CurrentCampaigns() {
             >
               Descending Unit Price
             </DropdownItem>
-
             <DropdownItem key="asc-rs" onPress={() => setSortOption("asc-rs")}>
               Ascending Remaining Stake
             </DropdownItem>
@@ -231,8 +242,11 @@ export function CurrentCampaigns() {
           </DropdownMenu>
         </Dropdown>
 
+        {/**
+         * Search Bar: full width on small screens and auto width on md+
+         */}
         <Input
-          className="max-w-[200px] ml-auto"
+          className="w-full md:w-auto md:ml-auto"
           startContent={<MagnifyingGlassIcon className="w-5 h-5" />}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
