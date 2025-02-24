@@ -11,6 +11,7 @@
   "dependencies": {
     "@aptos-labs/ts-sdk": "^1.35.0",
     "@aptos-labs/wallet-adapter-react": "^3.7.11",
+    "@bprogress/next": "^3.0.8",
     "@google/generative-ai": "^0.21.0",
     "@heroicons/react": "^2.2.0",
     "@heroui/react": "^2.6.14",

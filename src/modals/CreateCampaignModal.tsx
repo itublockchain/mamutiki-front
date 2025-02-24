@@ -13,7 +13,7 @@ import {
 
 import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { convertBalance } from "@/helpers/campaignHelpers";
 
 type Props = {
@@ -56,6 +56,15 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   const { createCampaign, isAptosClientReady, getSubscriptionStatus } =
     useAptosClient();
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState<{
+    width: number;
+    height: number;
+  }>({
+    width: 0,
+    height: 0,
+  });
+
   // Managing creating new key pair on modal open.
   useEffect(() => {
     if (!isModalOpen) {
@@ -71,6 +80,15 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       if (status) setIsPremium(status.status);
     });
   }, [isModalOpen, isAptosClientReady]);
+
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      setDimensions({ width, height });
+    }
+  }, [containerRef.current]);
+
+  console.log("Dimensions: ", dimensions);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -332,6 +350,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
         isOpen={isModalOpen}
         onClose={handleCancelButton}
         scrollBehavior="outside"
+        ref={containerRef}
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
@@ -477,6 +496,21 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* <div
+        id="glowing-effect-container"
+        className="absolute flex w-full h-screen justify-center items-center -z-10"
+      >
+        <div
+          id="glowing-effect"
+          className="bg-gradient-to-r from-yellow-400 to-yellow-600 opacity-50 rounded-full  "
+          style={{
+            width: dimensions.width * 1.2,
+            height: dimensions.width * 1.2,
+            display: isModalOpen ? "block" : "none",
+          }}
+        />
+      </div> */}
     </>
   );
 }

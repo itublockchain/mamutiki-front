@@ -238,6 +238,8 @@ export function Header() {
         )}
       </nav>
 
+      
+
       <CreateCampaignModal
         isModalOpen={isCreateCampaignModalOpen}
         setIsModalOpen={setIsCreateCampaignModalOpen}

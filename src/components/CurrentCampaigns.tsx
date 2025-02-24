@@ -1,8 +1,20 @@
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
-import { Spinner } from "@heroui/react";
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
+  Spinner,
+} from "@heroui/react";
 import { useEffect, useState } from "react";
 import CampaignCard from "./CampaignCard";
+
+import {
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/solid";
 
 export function CurrentCampaigns() {
   const [currentCampaigns, setCurrentCampaigns] = useState<
@@ -10,6 +22,25 @@ export function CurrentCampaigns() {
   >(null);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [sortOption, setSortOption] = useState<
+    | "asc-ts"
+    | "desc-ts"
+    | "asc-up"
+    | "desc-up"
+    | "asc-rs"
+    | "desc-rs"
+    | "asc-s"
+    | "desc-s"
+    | "asc-t"
+    | "desc-t"
+  >("desc-t");
+
+  const [sortedCampaings, setSortedCampaigns] = useState<
+    null | GetCampaignFunctionResponse[]
+  >(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { getAllCampaigns, isAptosClientReady } = useAptosClient();
 
@@ -34,18 +65,187 @@ export function CurrentCampaigns() {
     getInitialCampaings();
   }, [isAptosClientReady]);
 
+  // Managing Sorted Campaings
+  useEffect(() => {
+    if (!currentCampaigns) return;
+
+    // Manage Search Query First
+
+    let sorted = [...currentCampaigns];
+
+    if (searchQuery) {
+      sorted = currentCampaigns.filter(
+        (campaign) =>
+          campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          campaign.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    switch (sortOption) {
+      case "asc-ts":
+        sorted.sort((a, b) => a.reward_pool - b.reward_pool);
+        break;
+      case "desc-ts":
+        sorted.sort((a, b) => b.reward_pool - a.reward_pool);
+        break;
+      case "asc-up":
+        sorted.sort((a, b) => a.unit_price - b.unit_price);
+        break;
+      case "desc-up":
+        sorted.sort((a, b) => b.unit_price - a.unit_price);
+        break;
+      case "asc-rs":
+        sorted.sort((a, b) => a.remaining_reward - b.remaining_reward);
+        break;
+      case "desc-rs":
+        sorted.sort((a, b) => b.remaining_reward - a.remaining_reward);
+        break;
+      case "asc-s":
+        sorted.sort((a, b) => a.minimumScore - b.minimumScore);
+        break;
+      case "desc-s":
+        sorted.sort((a, b) => b.minimumScore - a.minimumScore);
+        break;
+      case "asc-t":
+        sorted.sort((a, b) => a.id - b.id);
+        break;
+      case "desc-t":
+        sorted.sort((a, b) => b.id - a.id);
+        break;
+    }
+
+    setSortedCampaigns(sorted);
+  }, [sortOption, currentCampaigns, searchQuery]);
+
   return (
-    <div id="active-campaigns-root" className="flex flex-col gap-5">
-      <div id="title" className="text-2xl font-bold">
-        Active Campaigns
+    <div id="active-campaigns-root" className="flex flex-col gap-14">
+      <div id="title-description" className="flex flex-col gap-2">
+        <div id="title" className=" text-2xl font-bold">
+          Data Marketplace
+        </div>
+        <div id="description" className="text-gray-400 text-sm">
+          The Data Marketplace is a decentralized platform for buying and
+          selling data securely and transparently. It enables users to monetize
+          their data and access valuable datasets without intermediaries. Users
+          can launch campaigns to request specific data, while others submit
+          datasets for payment. Powered by the Movement protocol, it ensures
+          secure, verifiable transactions through blockchain technology. Whether
+          for revenue generation or data-driven decision-making, the Data
+          Marketplace offers a scalable solution for diverse business needs.
+        </div>
       </div>
-      {isLoading || currentCampaigns === null ? (
+
+      <div
+        id="sorting-bar"
+        className="flex flex-row w-full border-b border-yellow-300/20 gap-2 md:gap-8 items-center px-2 md:px-0"
+      >
+        {/**
+         * By Price
+         */}
+        <Dropdown>
+          <DropdownTrigger>
+            <div
+              id="trigger"
+              className="flex flex-row gap-2 text-white font-bold justify-center items-center py-5 cursor-pointer"
+            >
+              <div>By Price</div>
+              <ChevronDownIcon className="w-4 h-4" />
+            </div>
+          </DropdownTrigger>
+          <DropdownMenu aria-label="Static Actions" disabledKeys={[sortOption]}>
+            <DropdownItem onPress={() => setSortOption("asc-ts")} key="asc-ts">
+              Ascending Total Stake
+            </DropdownItem>
+            <DropdownItem
+              key="desc-ts"
+              onPress={() => setSortOption("desc-ts")}
+            >
+              Descending Total Stake
+            </DropdownItem>
+
+            <DropdownItem key="asc-up" onPress={() => setSortOption("asc-up")}>
+              Ascending Unit Price
+            </DropdownItem>
+            <DropdownItem
+              key="desc-up"
+              onPress={() => setSortOption("desc-up")}
+            >
+              Descending Unit Price
+            </DropdownItem>
+
+            <DropdownItem key="asc-rs" onPress={() => setSortOption("asc-rs")}>
+              Ascending Remaining Stake
+            </DropdownItem>
+            <DropdownItem
+              key="desc-rs"
+              onPress={() => setSortOption("desc-rs")}
+            >
+              Descending Remaining Stake
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+
+        {/**
+         * By Properties
+         */}
+        <Dropdown>
+          <DropdownTrigger>
+            <div
+              id="trigger"
+              className="flex flex-row gap-2 text-white font-bold justify-center items-center py-5 cursor-pointer"
+            >
+              <div>Properties</div>
+              <ChevronDownIcon className="w-4 h-4" />
+            </div>
+          </DropdownTrigger>
+          <DropdownMenu aria-label="Static Actions" disabledKeys={[sortOption]}>
+            <DropdownItem key="asc-s" onPress={() => setSortOption("asc-s")}>
+              Ascending Score
+            </DropdownItem>
+            <DropdownItem key="desc-s" onPress={() => setSortOption("desc-s")}>
+              Descending Score
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+
+        {/**
+         * Sort by
+         */}
+        <Dropdown>
+          <DropdownTrigger>
+            <div
+              id="trigger"
+              className="flex flex-row gap-2 text-white font-bold justify-center items-center py-5 cursor-pointer"
+            >
+              <div>Sort by</div>
+              <ChevronDownIcon className="w-4 h-4" />
+            </div>
+          </DropdownTrigger>
+          <DropdownMenu aria-label="Static Actions" disabledKeys={[sortOption]}>
+            <DropdownItem key="asc-t" onPress={() => setSortOption("asc-t")}>
+              First News
+            </DropdownItem>
+            <DropdownItem key="desc-t" onPress={() => setSortOption("desc-t")}>
+              First Olds
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+
+        <Input
+          className="max-w-[200px] ml-auto"
+          startContent={<MagnifyingGlassIcon className="w-5 h-5" />}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
+      {isLoading || sortedCampaings === null ? (
         <div className="flex w-full">
           <Spinner />
         </div>
       ) : (
-        <div className="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {currentCampaigns.map((campaign) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+          {sortedCampaings.map((campaign) => (
             <CampaignCard
               id={campaign.id}
               staked={campaign.reward_pool}
