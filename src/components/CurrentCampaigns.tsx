@@ -1,7 +1,6 @@
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
 import {
-  Divider,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -254,7 +253,7 @@ export function CurrentCampaigns() {
       </div>
 
       {isLoading || sortedCampaings === null ? (
-        <div className="flex w-full">
+        <div className="flex w-full justify-center items-center h-[50vh]"> 
           <Spinner />
         </div>
       ) : (

@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 
 import { Lato } from "next/font/google";
+import Footer from "@/components/Footer";
 
 const lato = Lato({
   weight: ["100", "300", "400", "700"],
@@ -39,6 +40,7 @@ export default function RootLayout({
 
           <Header />
           {children}
+          <Footer />
         </Providers>
       </body>
     </html>
