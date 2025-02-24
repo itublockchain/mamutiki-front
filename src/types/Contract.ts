@@ -65,6 +65,7 @@ export type GetCampaignFunctionContractResponse = {
   unit_price: string;
   active: boolean;
   minimum_score: string;
+  created_at: number;
 };
 
 export type GetSubscriptionStatusResponse = {

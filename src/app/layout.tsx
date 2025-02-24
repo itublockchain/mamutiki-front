@@ -60,17 +60,14 @@ const HeadComponent = () => (
     <link rel="icon" type="image/png" href="/icon.png" />
 
     {/* Open Graph Metadata */}
-    <meta property="og:title" content="Notiphar • Find Data You Need" />
+    <meta property="og:title" content="Datagora • Find Data You Need" />
     <meta
       property="og:description"
-      content={"Notiphar is a platform where you can find data you need."}
+      content={"Datagora is a platform where you can find data you need."}
     />
-    <meta property="og:url" content="https://datagora.com" />
+    <meta property="og:url" content="https://datagora.vercel.app" />
     <meta property="og:site_name" content="Datagora" />
-    <meta
-      property="og:image"
-      content="https://mamutiki.vercel.app/images/og.png"
-    />
+    <meta property="og:image" content="https://datagora.vercel.app/logo.png" />
     <meta property="og:locale" content="en-US" />
     <meta property="og:type" content="website" />
   </head>
