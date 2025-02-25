@@ -32,7 +32,7 @@ export function useAptosClient() {
   const [isAptosClientReady, setIsAptosClientReady] = useState(false);
 
   const aptosConfig = useMemo(() => {
-    let fullNode = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL;
+    const fullNode = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL;
 
     // if (networkFromAdaptor && networkFromAdaptor.url) {
     //   fullNode = networkFromAdaptor.url;

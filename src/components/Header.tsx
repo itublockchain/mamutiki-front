@@ -9,7 +9,7 @@ import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { useAptosClient } from "@/helpers/useAptosClient";
 
 export function Header() {
-  const { connected, account, disconnect } = useWallet();
+  const { connected, account } = useWallet();
 
   const { isUsersNetworkCorrect } = useAptosClient();
 

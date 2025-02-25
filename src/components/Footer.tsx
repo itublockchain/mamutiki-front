@@ -5,65 +5,83 @@ import React from "react";
 export default function Footer() {
   return (
     <div
-      id="rooter"
-      className="flex flex-row justify-between items-center p-10"
+      id="footer-root"
+      className="flex flex-row flex-wrap gap-10 px-20 py-10 justify-between items-center"
     >
-      <div id="text" className="text-gray-500 max-w-sm">
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry. Lorem Ipsum has been the industry&apos;s standard dummy text ever
-        since the.
-        <div className="mt-3 text-gray-400">@2025 - All rights reserved</div>
-      </div>
-
-      <div id="resources-part" className="flex flex-col text-gray-500 gap-3">
-        <div id="labal" className="mb-2">
-          Resources
-        </div>
-
-        <Link href="/">Leaderboard</Link>
-        <Link href="/">Mamut</Link>
-        <Link href="/">Blog</Link>
-        <Link href="/" className="text-primary text-sm">
-          Contact Us
-        </Link>
+      <div id="logo-part" className="flex justify-center items-center">
+        <img src="/logo.png" alt="logo" className="w-24 h-28 " />
       </div>
 
       <div
-        id="social-part"
-        className="flex flex-col justify-center text-gray-500 gap-3 mb-5"
+        id="resources-social-part"
+        className="flex flex-row gap-32 text-gray-500 text-sm"
       >
-        <div id="labal" className="mb-2">
-          Social
+        <div id="resources-part" className="flex flex-col gap-2 border-red-500">
+          <div id="label">Resources</div>
+          <div id="contents" className="flex flex-col gap-2">
+            <div>Leaderboard</div>
+            <div>MAMUT</div>
+            <div>Blog</div>
+            <div className="text-primary">Contact us</div>
+          </div>
         </div>
 
-        <Link href="/" className="flex flex-row gap-2 items-center ">
-          <img src="/x.png" className="w-3 h-3" />X (Twitter)
-        </Link>
+        <div id="social-part" className="flex flex-col gap-2 border-red-500">
+          <div id="label">Social</div>
+          <div id="contents" className="flex flex-col gap-3">
+            <Link
+              href="https://twitter.com/datagoraxyz"
+              id="x-part"
+              className="flex flex-row gap-3 items-center justify-center"
+            >
+              <div id="icon-part" className="flex">
+                <img src="/x.png" alt="x" className="w-3 h-3" />
+              </div>
+              <div id="label">@datagoraxyz</div>
+            </Link>
 
-        <Link href="/" className="flex flex-row gap-2 items-center">
-          <img src="/telegram.png" className="w-4" />
-          Telegram
-        </Link>
+            <div
+              id="telegram-part"
+              className="flex flex-row gap-3 items-center justify-center"
+            >
+              <div id="icon-part" className="flex">
+                <img src="/telegram.png" alt="telegram" className="w-3 h-3" />
+              </div>
+              <div id="label">@datagoraxyz</div>
+            </div>
 
-        <Link href="/" className="flex flex-row gap-2 items-center">
-          <img src="/discord_logo.png" className="w-4" />
-          Discord
-        </Link>
+            <div
+              id="discord-part"
+              className="flex flex-row gap-3 items-center justify-center"
+            >
+              <div id="icon-part" className="flex">
+                <img src="/discord.png" alt="discord" className="w-3 h-3" />
+              </div>
+              <div id="label">@datagoraxyz</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div
-        id="stay-in-touch"
-        className="flex flex-col bg-white/10 rounded-xl font-bold justify-center gap-3 p-3 pb-4"
+        id="stay-in-touch-button"
+        className="flex flex-col gap-2 p-4 bg-white/10 rounded-xl"
       >
-        Stay in touch
-        <div className="flex flex-row  jusitfy-center gap-1.5">
-          <Input label="helloworld@xyz.com" className="h-5" />
+        <div id="label" className="text-white font-bold text-sm">
+          Stay in touch
+        </div>
 
-          <div
-            id="subscribe-button"
-            className="h-9 p-1 px-3 flex items-center justify-center bg-primary text-black text-sm rounded-lg cursor-pointer"
-          >
-            Subscribe
+        <div id="input-and-button-part" className="flex flex-row gap-2">
+          <div id="input-part" className="flex items-center">
+            <Input size="sm" placeholder={"abc@def.com"} />
+          </div>
+          <div id="button-part" className="flex items-center">
+            <div
+              id="button"
+              className="flex items-start justify-center text-black py-1 px-2 bg-primary rounded-md text-sm cursor-pointer"
+            >
+              Subscribe
+            </div>
           </div>
         </div>
       </div>
