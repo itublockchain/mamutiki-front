@@ -15,7 +15,7 @@ import { useState } from "react";
 type Props = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  submittedDataDocData: Contribution;
+  submittedDataDocData: Contribution | undefined;
 };
 
 export function VisitSubmittedDataModal({
@@ -194,6 +194,8 @@ export function VisitSubmittedDataModal({
   };
 
   const handleDownloadButton = async () => {
+    if (!submittedDataDocData) return;
+
     if (isDownloadLoading) return;
     if (privateKey === null) return;
 
@@ -240,6 +242,10 @@ export function VisitSubmittedDataModal({
     setIsDownloadLoading(false);
     setIsOpen(false);
   };
+
+  if (!submittedDataDocData) {
+    return null;
+  }
 
   return (
     <>

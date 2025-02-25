@@ -34,12 +34,14 @@ export function useAptosClient() {
   const aptosConfig = useMemo(() => {
     let fullNode = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL;
 
-    if (networkFromAdaptor && networkFromAdaptor.url) {
-      fullNode = networkFromAdaptor.url;
-    }
+    // if (networkFromAdaptor && networkFromAdaptor.url) {
+    //   fullNode = networkFromAdaptor.url;
+    // }
 
     if (!fullNode) {
-      console.error("Full Node URL not found on both .env and adaptor.");
+      console.error(
+        "Full Node URL not found on both .env and adaptor (adaptor not activated for test purposes)."
+      );
       return null;
     }
 
@@ -55,25 +57,6 @@ export function useAptosClient() {
     if (!aptosConfig || isWalletLoading) return null;
     return new Aptos(aptosConfig);
   }, [aptosConfig, isWalletLoading]);
-
-  const currentNetworkName = useMemo(() => {
-    let url = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL;
-
-    if (networkFromAdaptor?.url) url = networkFromAdaptor?.url;
-
-    if (!url) {
-      console.error(
-        "Network URL (Full Node) not found on both .env and adaptor."
-      );
-      return null;
-    }
-
-    if (url === process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL)
-      return "testnet";
-    else if (url === process.env.NEXT_PUBLIC_MOVEMENT_MAIN_NETWORK_URL)
-      return "mainnet";
-    else return null;
-  }, [networkFromAdaptor]);
 
   // Managing isAptosClientReady state.
   useEffect(() => {
@@ -253,7 +236,6 @@ export function useAptosClient() {
 
   const getAllCampaigns = async () => {
     if (!aptosClient) {
-      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -291,7 +273,6 @@ export function useAptosClient() {
 
   const getCampaignData = async (campaignId: string) => {
     if (!aptosClient) {
-      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -328,7 +309,6 @@ export function useAptosClient() {
 
   const getContributions = async (campaignId: string) => {
     if (!aptosClient) {
-      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -382,7 +362,6 @@ export function useAptosClient() {
 
   const subscribePremium = async () => {
     if (!aptosClient) {
-      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -420,7 +399,6 @@ export function useAptosClient() {
 
   const getSubscriptionStatus = async () => {
     if (!aptosClient) {
-      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -467,7 +445,6 @@ export function useAptosClient() {
 
   const getBalanceOfAccount = async () => {
     if (!aptosClient) {
-      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -506,7 +483,6 @@ export function useAptosClient() {
 
   const getTokensFromFaucet = async () => {
     if (!aptosClient) {
-      toast.error("AptosClient is not ready.");
       return false;
     }
 
@@ -547,6 +523,35 @@ export function useAptosClient() {
     }
   };
 
+  const isUsersNetworkCorrect = () => {
+    if (!aptosClient) {
+      return false;
+    }
+
+    if (!isWalletConnected) {
+      return false;
+    }
+
+    const walletNetworkURL = networkFromAdaptor?.url || "";
+    if (!walletNetworkURL) {
+      console.error("Wallet network URL not found.");
+      return false;
+    }
+
+    const currentNetworkURL = aptosConfig?.fullnode || "";
+    if (!currentNetworkURL) {
+      console.error("Current network URL not found.");
+      return false;
+    }
+
+    if (walletNetworkURL !== currentNetworkURL) {
+      toast.error("Please switch your network to Movement Porto Testnet.");
+      return false;
+    }
+
+    return true;
+  };
+
   return {
     createCampaign,
     getAllCampaigns,
@@ -556,9 +561,9 @@ export function useAptosClient() {
     getContributions,
     subscribePremium,
     getSubscriptionStatus,
-    currentNetworkName,
     getBalanceOfAccount,
     getTokensFromFaucet,
     getLastCreatedCampaignOfCurrentUser,
+    isUsersNetworkCorrect,
   };
 }

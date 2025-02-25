@@ -72,8 +72,8 @@ export default function Home() {
 
   if (campaignData === "not-exist")
     return (
-      <div className="flex w-full h-full justify-center items-center">
-        <h1 className="text-2xl">Campaign not found</h1>
+      <div className="flex w-full h-screen justify-center items-center">
+        <h1 className="text-xl">Campaign not found</h1>
       </div>
     );
 

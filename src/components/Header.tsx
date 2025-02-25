@@ -6,9 +6,12 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { useAptosClient } from "@/helpers/useAptosClient";
 
 export function Header() {
-  const { connected, account } = useWallet();
+  const { connected, account, disconnect } = useWallet();
+
+  const { isUsersNetworkCorrect } = useAptosClient();
 
   const [isCreateCampaignModalOpen, setIsCreateCampaignModalOpen] =
     useState(false);
@@ -20,6 +23,9 @@ export function Header() {
 
   const handleCreateButtonAtHeader = () => {
     if (!connected) return handleConnectButton();
+
+    const networkCorrect = isUsersNetworkCorrect();
+    if (!networkCorrect) return;
 
     setIsCreateCampaignModalOpen(true);
   };
