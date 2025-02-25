@@ -67,7 +67,10 @@ const HeadComponent = () => (
     />
     <meta property="og:url" content="https://datagora.vercel.app" />
     <meta property="og:site_name" content="Datagora" />
-    <meta property="og:image" content="https://datagora.vercel.app/logo.png" />
+    <meta
+      property="og:image"
+      content="https://datagora.vercel.app/banner.jpg"
+    />
     <meta property="og:locale" content="en-US" />
     <meta property="og:type" content="website" />
   </head>

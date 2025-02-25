@@ -287,6 +287,7 @@ export function VisitSubmittedDataModal({
               onPress={handleDownloadButton}
               isLoading={isDownloadLoading}
               isDisabled={privateKey === null}
+              className="text-black"
             >
               Download
             </Button>

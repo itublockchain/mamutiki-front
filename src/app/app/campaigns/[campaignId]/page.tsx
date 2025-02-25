@@ -2,9 +2,11 @@
 
 import { SubmittedDatasSection } from "@/components/SubmittedDatasSection";
 import { useAptosClient } from "@/helpers/useAptosClient";
+import { ConnectWalletModal } from "@/modals/ConnectWalletModal";
 import { SubmitDataModal } from "@/modals/SubmitDataModal";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
-import { Button, Image, Spinner } from "@heroui/react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { Spinner } from "@heroui/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -19,11 +21,26 @@ export default function Home() {
 
   const { getCampaignData, isAptosClientReady } = useAptosClient();
 
+  const [diamondFullCount, setDiamondFullCount] = useState(0);
+
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+  const { account } = useWallet();
+
   useEffect(() => {
     if (!isAptosClientReady || !id) return;
 
     getInitialCampaignData();
   }, [isAptosClientReady, id]);
+
+  useEffect(() => {
+    if (!campaignData) return setDiamondFullCount(0);
+    if (campaignData === "not-exist") return setDiamondFullCount(0);
+
+    const fullD = Math.round(campaignData.minimumScore / 20);
+
+    setDiamondFullCount(fullD);
+  }, [campaignData]);
 
   const getInitialCampaignData = async () => {
     if (typeof id !== "string") {
@@ -41,12 +58,14 @@ export default function Home() {
   };
 
   const handleSubmitButton = () => {
+    if (!account) return setIsWalletModalOpen(true);
+
     setIsSubmitDataModalOpen(true);
   };
 
   if (campaignData === null)
     return (
-      <div className="flex w-full h-full justify-center items-center">
+      <div className="flex w-full h-screen justify-center items-center">
         <Spinner size="lg" />
       </div>
     );
@@ -60,66 +79,132 @@ export default function Home() {
 
   return (
     <>
-      <div className="flex flex-col w-full h-full gap-10 px-10 py-5">
+      <div
+        id="campaign-detail-page-root"
+        className="flex flex-col min-h-screen p-10 px-20 gap-8"
+      >
         <div
-          id="creator-data"
-          className="flex flex-col justify-center items-center gap-3"
+          id="title-description-part"
+          className="flex flex-col justify-center w-full gap-8"
         >
-          <Image
-            src="https://picsum.photos/200?random=1"
-            className=" rounded-full w-32 h-32"
-          />
-          <div className="flex flex-col gap-1">
-            <div className="text-xs">Campaign Creator</div>
-            <h1 className="font-bold">{campaignData.creator}</h1>
+          <div id="title-and-tags" className="flex flex-col gap-2">
+            <div id="title" className="text-3xl font-bold text-primary">
+              {campaignData.title}
+            </div>
+            <div id="tags" className="flex flex-row gap-3">
+              {["Health", "Finance"].map((tag) => (
+                <div
+                  id="tag-1"
+                  className="flex items-center justify-center bg-white/30 px-2 py-0.5 rounded-xl text-sm"
+                  key={tag}
+                >
+                  {tag}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div id="description" className="text-white text-sm">
+            {campaignData.description}
           </div>
         </div>
 
-        <div id="campaign-details" className="grid grid-cols-2 gap-3 w-full">
-          <div id="campaign-name" className="flex flex-col gap-1">
-            <div className="text-xs">Title</div>
-            <h1 className="font-bold">{campaignData.title}</h1>
-          </div>
-          <div id="campaign-description" className="flex flex-col gap-1">
-            <div className="text-xs">Description</div>
-            <h1 className="font-bold">{campaignData.description}</h1>
+        <div id="specs" className="flex flex-row w-full justify-between">
+          <div
+            id="initial-stake-and-min-quality-part"
+            className="flex flex-row gap-8"
+          >
+            <div id="initial-stake-part" className="flex flex-col gap-0.5">
+              <div id="label" className="text-gray-400 text-sm">
+                Initial Stake
+              </div>
+              <div id="value" className="text-white text-xl">
+                {campaignData.reward_pool}
+              </div>
+            </div>
+
+            <div id="minimum-quality-part" className="flex flex-col gap-0.5">
+              <div id="label" className="text-gray-400 text-sm">
+                Min Data Quality
+              </div>
+              <div
+                id="value"
+                className="flex flex-row justify-center items-center gap-1"
+              >
+                {[...Array(diamondFullCount)].map((_, i) => (
+                  <img src="/diamond_full.png" className="w-5" key={i} />
+                ))}
+                {[...Array(5 - diamondFullCount)].map((_, i) => (
+                  <img src="/diamond_empty.png" className="w-5" key={i} />
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div id="campaign-price-offer" className="flex flex-col gap-1">
-            <div className="text-xs">Unit Price</div>
-            <h1 className="font-bold">{campaignData.unit_price}</h1>
-          </div>
-          <div id="campaign-offer-currency" className="flex flex-col gap-1">
-            <div className="text-xs">Campaign Offer Currency</div>
-            <h1 className="font-bold">APT</h1>
-          </div>
+          <div
+            id="remaining-stake-and-unit-price"
+            className="flex flex-row gap-8"
+          >
+            <div id="remaining-stake-part" className="flex flex-col gap-0.5">
+              <div id="label" className="text-gray-400 text-sm">
+                Remaining Staked
+              </div>
+              <div id="value" className="text-white text-xl">
+                {campaignData.remaining_reward}
+              </div>
+            </div>
 
-          <div id="campaign-total-staked" className="flex flex-col gap-1">
-            <div className="text-xs">Initial Statked</div>
-            <h1 className="font-bold">{campaignData.reward_pool}</h1>
-          </div>
-
-          <div id="campaign-remaining-statked" className="flex flex-col gap-1">
-            <div className="text-xs">Remaining Staked</div>
-            <h1 className="font-bold">{campaignData.remaining_reward}</h1>
-          </div>
-
-          <div id="campaign-min-data-quality" className="flex flex-col gap-1">
-            <div className="text-xs">Campaign Min Data Quality</div>
-            <h1 className="font-bold">{campaignData.data_spec}</h1>
-          </div>
-
-          <div id="campaign-status" className="flex flex-col gap-1">
-            <div className="text-xs">Campaign Status</div>
-            <h1 className="font-bold">{campaignData.active.toString()}</h1>
+            <div id="unit-price" className="flex flex-col gap-0.5">
+              <div id="label" className="text-gray-400 text-sm">
+                Unit Price
+              </div>
+              <div id="value" className="text-white text-xl">
+                {campaignData.unit_price} USDT
+              </div>
+            </div>
           </div>
         </div>
 
         <div
-          id="submit-data-root"
-          className="flex flex-col w-full items-center"
+          id="creator-submit-part"
+          className="flex flex-row w-full justify-between items-center"
         >
-          <Button onPress={handleSubmitButton}>Submit Data</Button>
+          <div id="creator-part" className="flex flex-col gap-2">
+            <div
+              id="created-at-part"
+              className="flex flex-row gap-1 text-xs items-center"
+            >
+              <div id="label" className="text-gray-400">
+                Created At
+              </div>
+              <div id="time" className="">
+                {new Date(campaignData.createdAt * 1000).toLocaleDateString()}
+              </div>
+            </div>
+
+            <div
+              id="creator-info-part"
+              className="flex flex-row gap-2 items-center text-sm"
+            >
+              <img
+                src={`https://picsum.photos/seed/picsum/200/200?random=${campaignData.creator}`}
+                className="w-7 h-7 rounded-full"
+              />
+              <div id="creator-name" className="text-gray-300">
+                {campaignData.creator.slice(0, 4)}
+                ......
+                {campaignData.creator.slice(-7)}
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="button-part"
+            className="flex items-center justify-center px-2 py-1.5 bg-primary rounded-lg cursor-pointer text-black font-bold text-sm"
+            onClick={handleSubmitButton}
+          >
+            Submit Data
+          </div>
         </div>
 
         <SubmittedDatasSection
@@ -132,6 +217,11 @@ export default function Home() {
         isOpen={isSubmitDataModalOpen}
         setIsOpen={setIsSubmitDataModalOpen}
         campaignData={campaignData}
+      />
+
+      <ConnectWalletModal
+        isOpen={isWalletModalOpen}
+        setIsOpen={setIsWalletModalOpen}
       />
     </>
   );
