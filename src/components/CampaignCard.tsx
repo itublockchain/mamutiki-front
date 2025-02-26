@@ -37,7 +37,7 @@ export default function CampaignCard({
             Unit Price
           </div>
           <div id="value" className="text-yellow-300">
-            {unitPrice} MAMU
+            {unitPrice} DATA
           </div>
         </div>
 
@@ -46,7 +46,7 @@ export default function CampaignCard({
             Total Staked
           </div>
           <div id="value" className="text-yellow-300">
-            {staked} MAMU
+            {staked} DATA
           </div>
         </div>
       </div>
