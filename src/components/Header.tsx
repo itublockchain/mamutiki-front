@@ -8,6 +8,8 @@ import { useState } from "react";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { useAptosClient } from "@/helpers/useAptosClient";
 
+import { usePathname } from "next/navigation";
+
 export function Header() {
   const { connected, account } = useWallet();
 
@@ -20,6 +22,8 @@ export function Header() {
     useState(false);
 
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+
+  const pathname = usePathname();
 
   const handleCreateButtonAtHeader = () => {
     if (!connected) return handleConnectButton();
@@ -44,7 +48,10 @@ export function Header() {
     <>
       <div
         id="header-root"
-        className="sticky flex flex-row justify-between items-center bg-black z-50 p-5 px-10 border-b border-primary/30"
+        className="flex w-full flex-row justify-between items-center bg-black p-5 px-10 border-b border-primary/30 z-50"
+        style={{
+          position: pathname === "/" ? "fixed" : "sticky",
+        }}
       >
         <div
           id="left-part"

@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import TextTransition, { presets } from "react-text-transition";
-import VantaBackground from "../Background/VantaBackground";
 
 const TEXTS = [
   "Decentralized Data",
@@ -35,10 +35,7 @@ export default function LandingPart() {
 
   return (
     <>
-      {/* <AnimatedBackground /> */}
-      <VantaBackground />
-
-      <div className="flex h-screen w-full relative bg-black/35 md:bg-black/35 backdrop-blur-sm md:backdrop-blur-0">
+      <div className=" flex h-screen w-full relative">
         <div
           id="landing-content"
           className="flex flex-col w-full h-full z-20 gap-8 md:gap-10 items-center justify-center p-5 md:p-0 "
@@ -77,11 +74,24 @@ export default function LandingPart() {
           </div>
 
           <div
-            id="button"
-            className="flex px-5 py-2 bg-yellow-300 rounded-2xl text-black cursor-pointer"
-            onClick={handleExploreMoreButton}
+            id="buttons-part"
+            className="flex flex-row w-[25%] gap-5 items-center"
           >
-            Explore More
+            <div
+              id="learn-more-button"
+              className="flex items-center justify-center w-[40%] text-sm py-2 border border-primary rounded-lg text-primary cursor-pointer"
+              onClick={handleExploreMoreButton}
+            >
+              Learn More
+            </div>
+
+            <Link
+              href="/app"
+              id="launch-dapp--button"
+              className="flex items-center justify-center w-[60%] text-sm py-2 bg-yellow-300 font-bold rounded-lg text-black cursor-pointer"
+            >
+              Launch Dapp
+            </Link>
           </div>
         </div>
       </div>
