@@ -31,7 +31,7 @@ export default function HowToStartPart() {
         />
 
         <StepCard
-          iconURL="/step/flask.png"
+          iconURL="/step/flaskk.png"
           title="Step 3"
           description="Switch to Porto Testnet"
           imageURL="/step/testnet.png"
