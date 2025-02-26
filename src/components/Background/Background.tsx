@@ -4,7 +4,7 @@ export default function Background() {
   return (
     <div
       id="bg-root"
-      className="absolute flex flex-row gap-10 pt-[50vh] h-full w-screen z-0 overflow-hidden"
+      className="absolute flex flex-row gap-10 pt-[50vh] h-[400vh] w-screen z-0 overflow-hidden"
     >
       <div id="shape-1" className="flex w-[30%] opacity-25">
         <img src="/bg/shape1.png" className="w-full " alt="shape-1" />

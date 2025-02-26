@@ -1,34 +1,140 @@
-import React from "react";
-import SpecCard from "./SpecCard";
-
 export default function RoadmapPart() {
   return (
     <div
-      id="root"
-      className="flex flex-col w-full self-center gap-10 px-5 md:px-20 min-h-screen "
+      id="roadmap-part"
+      className="flex flex-col items-center p-10 bg-black/60 min-h-screen gap-5"
     >
       <div
         id="title"
-        className="flex justify-center items-center w-full font-bold text-3xl"
+        className="flex justify-center items-center font-bold text-4xl text-white"
       >
-        Our Roadmap
+        ROADMAP
       </div>
-      <div className="flex flex-col md:grid md:grid-cols-3 gap-5 min-h-[50vh]">
-        <SpecCard
-          title="Q1"
-          description="We will use our own token."
-          className="h-full"
-        />
-        <SpecCard
-          title="Q2"
-          description="We will launch our
-          platform."
-        />
-        <SpecCard
-          title="Q3"
-          description="We will onboard our first
-          customers."
-        />
+
+      <div id="vertical-line-1" className="h-8 w-0 border border-white" />
+
+      <div id="q1-part" className="flex flex-col w-[64%] items-center gap-5">
+        <div id="title-part" className="text-white text-4xl">
+          Q1
+        </div>
+
+        <div id="q1-content" className="flex flex-row gap-4">
+          <div
+            id="content-title"
+            className="flex items-center justify-end w-[49%]"
+          >
+            <div
+              id="text-part"
+              className="flex w-full self-start justify-end text-2xl p-2 border-b border-primary/50 "
+            >
+              $Data Token
+            </div>
+          </div>
+
+          <div
+            id="content-divider-vertical-line-part"
+            className="flex w-[2%] justify-center items-center"
+          >
+            <div
+              id="content-divider-vertical-line"
+              className="flex w-0 h-full border border-white"
+            />
+          </div>
+
+          <div
+            id="content-paragraph-part"
+            className="flex w-[49%] border border-l-0 border-primary/40 rounded-md rounded-l-none text-sm text-white p-5 pl-2"
+          >
+            We will create and integrate our own token $DATA to enhance the
+            functionality and ecosystem of our project. This token will be
+            utilized for transactions, rewards, and various platform
+            interactions, providing additional value to our users.
+          </div>
+        </div>
+      </div>
+
+      <div id="q2-part" className="flex flex-col w-[64%] items-center gap-5">
+        <div id="title-part" className="text-white text-4xl">
+          Q2
+        </div>
+        <div id="q2-content" className="flex flex-row gap-4">
+          <div
+            id="content-paragraph-part"
+            className="flex w-[49%] border border-l-0 border-primary/40 rounded-md rounded-l-none text-sm text-white p-5 pr-2 text-right"
+          >
+            We will create and integrate our own token $DATA to enhance the
+            functionality and ecosystem of our project. This token will be
+            utilized for transactions, rewards, and various platform
+            interactions, providing additional value to our users.
+          </div>
+
+          <div
+            id="content-divider-vertical-line-part"
+            className="flex w-[2%] justify-center items-center"
+          >
+            <div
+              id="content-divider-vertical-line"
+              className="flex w-0 h-full border border-white"
+            />
+          </div>
+
+          <div
+            id="content-title"
+            className="flex items-center justify-end w-[49%]"
+          >
+            <div
+              id="text-part"
+              className="flex w-full self-start justify-start text-2xl p-2 border-b border-primary/50 "
+            >
+              Launch DApp
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="q3-part" className="flex flex-col w-[64%] items-center gap-5">
+        <div id="title-part" className="text-white text-4xl">
+          Q3
+        </div>
+
+        <div id="q3-content" className="flex flex-row gap-4">
+          <div
+            id="content-title"
+            className="flex items-center justify-end w-[49%]"
+          >
+            <div
+              id="text-part"
+              className="flex w-full self-start justify-end text-2xl p-2 border-b border-primary/50 "
+            >
+              Onboarding
+            </div>
+          </div>
+
+          <div
+            id="content-divider-vertical-line-part"
+            className="flex w-[2%] justify-center items-center"
+          >
+            <div
+              id="content-divider-vertical-line"
+              className="flex w-0 h-full border border-white"
+            />
+          </div>
+
+          <div
+            id="content-paragraph-part"
+            className="flex w-[49%] border border-l-0 border-primary/40 rounded-md rounded-l-none text-sm text-white p-5 pl-2"
+          >
+            We will onboard our first customers, allowing them to experience our
+            data marketplace firsthand. Their feedback will help us refine the
+            platform and improve its features to better meet user needs.
+          </div>
+        </div>
+      </div>
+
+      <div id="ending-vertical-lines" className="flex flex-col gap-3">
+        <div id="vertical-line-2" className="h-8 w-0 border border-white" />
+        <div id="vertical-line-3" className="h-4 w-0 border border-white" />
+        <div id="vertical-line-3" className="h-2 w-0 border border-white" />
       </div>
     </div>
   );
