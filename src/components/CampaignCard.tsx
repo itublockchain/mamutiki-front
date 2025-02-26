@@ -20,7 +20,7 @@ export default function CampaignCard({
   return (
     <Link
       href={`/app/campaigns/${id}`}
-      className="flex flex-col w-full md:w-[360px] gap-7 justify-center bg-gradient-to-bl from-gray-950 to-[#99977359] px-6 py-7 rounded-xl border-b border-l border-yellow-300/40 transition transform duration-300 hover:scale-105 hover:shadow-lg"
+      className="flex flex-col w-full md:w-[360px] gap-7 justify-center bg-gradient-to-b from-gray-950 to-[#99977348] px-6 py-7 rounded-xl border-b border-l border-yellow-300/40 transition transform duration-300 hover:scale-105 hover:shadow-lg"
     >
       <div id="title-description" className="flex flex-col overflow-auto">
         <div id="title" className="text-xl font-bold text-yellow-300">

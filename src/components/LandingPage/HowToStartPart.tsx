@@ -1,5 +1,6 @@
 import React from "react";
 import StepCard from "./StepCard";
+import Image from "next/image";
 
 export default function HowToStartPart() {
   return (
@@ -47,10 +48,11 @@ export default function HowToStartPart() {
           Ready to Use
         </div>
         <div id="image-part" className="flex">
-          <img
-            src="/step/datagora.png"
-            alt="ready"
-            className="w-[200px] h-[44px]"
+          <Image
+            src="/step/ready_to_use.svg"
+            alt="Ready To Use Image"
+            width={244}
+            height={44}
           />
         </div>
       </div>

@@ -40,12 +40,12 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
 
   const { account } = useWallet();
 
-  // Clearing States Initially
+  // Clearing States Initially and on Close
   useEffect(() => {
     setIsFileAnalyzeLoading(false);
     setIsSubmitLoading(false);
     setAIAnalysis(null);
-  }, []);
+  }, [isOpen]);
 
   // Managing setIsRequirementsMatched states
   useEffect(() => {

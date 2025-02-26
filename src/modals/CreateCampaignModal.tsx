@@ -17,6 +17,7 @@ import { convertBalance } from "@/helpers/campaignHelpers";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 type Props = {
   isModalOpen: boolean;
@@ -45,13 +46,15 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   const [isPrivateKeyDownloaded, setIsPrivateKeyDownloaded] = useState(false);
 
   const [validationErrors, setValidationErrors] = useState({
-    title: "",
-    description: "",
-    dataSpec: "",
-    unitPrice: "",
-    statkedBalance: "",
+    title: "empty",
+    description: "empty",
+    dataSpec: "empty",
+    unitPrice: "empty",
+    statkedBalance: "empty",
     minimumQualityScore: "",
   });
+
+  const [isInputsValid, setIsInputsValid] = useState(false);
 
   const [creationError, setCreationError] = useState("");
 
@@ -63,6 +66,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     getSubscriptionStatus,
     getLastCreatedCampaignOfCurrentUser,
   } = useAptosClient();
+
+  const { account } = useWallet();
 
   // Managing creating new key pair on modal open.
   useEffect(() => {
@@ -79,6 +84,27 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
       if (status) setIsPremium(status.status);
     });
   }, [isModalOpen, isAptosClientReady]);
+
+  // Clearing States On Close and Initially
+  useEffect(() => {
+    resetInputs();
+  }, [isModalOpen]);
+
+  // Managing isInputsValid state
+  useEffect(() => {
+    if (
+      validationErrors.dataSpec ||
+      validationErrors.description ||
+      validationErrors.statkedBalance ||
+      validationErrors.title ||
+      validationErrors.unitPrice ||
+      validationErrors.minimumQualityScore
+    ) {
+      setIsInputsValid(false);
+    } else {
+      setIsInputsValid(true);
+    }
+  }, [validationErrors]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -222,24 +248,32 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     }
 
     try {
-      // Create a Blob with the JSON data
-      const blob = new Blob([privateKey], {
-        type: "text/plain",
-      });
+      // Build the JSON object with the desired structure.
+      const keyData = {
+        owner: account?.address || "Account Not Found!", // Replace with the actual owner value if available.
+        private_key: privateKey, // Use the retrieved private key.
+        created_at: Date.now(), // Timestamp when the key was downloaded.
+      };
 
-      // Create a temporary URL for the Blob
+      // Convert the object to a formatted JSON string.
+      const jsonData = JSON.stringify(keyData, null, 2);
+
+      // Create a Blob with the JSON data.
+      const blob = new Blob([jsonData], { type: "application/json" });
+
+      // Create a temporary URL for the Blob.
       const url = URL.createObjectURL(blob);
 
-      // Create a temporary anchor element
+      // Create a temporary anchor element for the download.
       const a = document.createElement("a");
       a.href = url;
-      a.download = "key" + "-" + Date.now().toString() + ".txt"; // Set the filename
+      a.download = "key-" + Date.now().toString() + ".json"; // Set the filename with a .json extension.
 
-      // Trigger the download
+      // Trigger the download.
       document.body.appendChild(a);
       a.click();
 
-      // Cleanup
+      // Cleanup: Remove the anchor and revoke the URL.
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
@@ -298,18 +332,26 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
 
     setIsCreateLoading(true);
 
+    const rewardPoolBigInt = convertToBIGInt(stakedBalance);
+    if (!rewardPoolBigInt) {
+      setCreationError("Failed to convert staked balance to BigInt");
+      return setIsCreateLoading(false);
+    }
+
+    const unitPriceBigInt = convertToBIGInt(unitPrice);
+    if (!unitPriceBigInt) {
+      setCreationError("Failed to convert unit price to BigInt");
+      return setIsCreateLoading(false);
+    }
+
     const result = await createCampaign({
       title: title,
       description: description,
       dataSpec: dataSpec,
       minimumScore: minimumQualityScore,
       minimumContribution: 0,
-      rewardPool: Number(
-        BigInt(Math.round(convertBalance(Number(stakedBalance), true)))
-      ),
-      unitPrice: Number(
-        BigInt(Math.round(convertBalance(Number(unitPrice), true)))
-      ),
+      rewardPool: rewardPoolBigInt,
+      unitPrice: unitPriceBigInt,
       publicKeyForEncryption: dataKeyPair.publicKey,
     });
 
@@ -346,6 +388,31 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
     setDataSpec("");
     setDataKeyPair(null);
     setIsPrivateKeyDownloaded(false);
+    setMinimumQualityScore(70);
+    setMinimumContributonCount(0);
+    setCreationError("");
+    setValidationErrors({
+      title: "empty",
+      description: "empty",
+      dataSpec: "empty",
+      unitPrice: "empty",
+      statkedBalance: "empty",
+      minimumQualityScore: "",
+    });
+  };
+
+  const convertToBIGInt = (value: string) => {
+    try {
+      const result = Number(
+        BigInt(
+          Math.round(convertBalance(Number(value.replace(",", ".")), true))
+        )
+      );
+      return result;
+    } catch (error) {
+      console.error("Error on convertToBIGInt: ", error);
+      return false;
+    }
   };
 
   return (
@@ -362,26 +429,24 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
 
           <ModalBody>
             <Input
-              isInvalid={validationErrors.title.length > 0}
               isRequired
               label="Title"
               placeholder="Enter title for your campaign..."
               onChange={handleTitleChange}
               value={title}
+              maxLength={120}
             />
 
             <Textarea
-              isInvalid={validationErrors.description.length > 0}
               isRequired
               label="Description"
               placeholder="Enter description for your campaign..."
               onChange={handleDescriptionChange}
               value={description}
+              maxLength={1200}
             />
 
             <Input
-              type="number"
-              isInvalid={validationErrors.unitPrice.length > 0}
               isRequired
               label="Unit Price (APT)"
               onChange={handleUnitPriceChange}
@@ -389,16 +454,13 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             />
 
             <Input
-              isInvalid={validationErrors.statkedBalance.length > 0}
               isRequired
               label="Staked Balance (APT)"
-              type="number"
               onChange={handleStakedBalanceChange}
               value={stakedBalance.toString()}
             />
 
             <Textarea
-              isInvalid={validationErrors.dataSpec.length > 0}
               isRequired
               label="Data Spec"
               placeholder="Enter data spec for your campaign..."
@@ -456,12 +518,16 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             />
 
             <div className=" text-xs text-warning-500">
-              Please save your private key below. You will need it to decrypt
-              the data you receive. Note that this key will be shown only once.
+              Plase download your private key and keep it safe. You will need it
+              to decrypt the data.
             </div>
             <Input
               value={
-                (dataKeyPair && dataKeyPair.privateKey.slice(0, 30) + "...") ||
+                (dataKeyPair &&
+                  dataKeyPair.privateKey.slice(
+                    dataKeyPair.privateKey.length - 50,
+                    dataKeyPair.privateKey.length - 20
+                  ) + "...") ||
                 "Please create a key pair"
               }
               label="Private Key"
@@ -475,9 +541,12 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             <Button onPress={handleCreateNewDataKeyPair}>Create New Key</Button>
 
             {creationError && (
-              <div className="text-xs text-red-500">{creationError}</div>
+              <div className="text-xs self-center text-danger-500">
+                {creationError}
+              </div>
             )}
           </ModalBody>
+
           <ModalFooter>
             <Button
               color="secondary"
@@ -490,7 +559,9 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             <Button
               color="primary"
               onPress={handleCreateButton}
-              isDisabled={isCreateLoading || !isPrivateKeyDownloaded}
+              isDisabled={
+                isCreateLoading || !isPrivateKeyDownloaded || !isInputsValid
+              }
               isLoading={isCreateLoading}
               className="text-black"
             >

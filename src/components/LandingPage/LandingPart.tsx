@@ -22,7 +22,7 @@ export default function LandingPart() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const intervalId = setInterval(() => setIndex((index) => index + 1), 1500);
+    const intervalId = setInterval(() => setIndex((index) => index + 1), 3000);
     return () => clearTimeout(intervalId);
   }, []);
 

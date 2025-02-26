@@ -114,16 +114,16 @@ export default function Home() {
             id="initial-stake-and-min-quality-part"
             className="flex flex-row gap-8"
           >
-            <div id="initial-stake-part" className="flex flex-col gap-0.5">
+            <div id="unit-price" className="flex flex-col gap-0.5">
               <div id="label" className="text-gray-400 text-sm">
-                Initial Stake
+                Unit Price
               </div>
               <div id="value" className="text-white text-xl">
-                {campaignData.reward_pool}
+                {campaignData.unit_price} DATA
               </div>
             </div>
 
-            <div id="minimum-quality-part" className="flex flex-col gap-0.5">
+            <div id="minimum-quality-part" className="flex flex-col gap-1">
               <div id="label" className="text-gray-400 text-sm">
                 Min Data Quality
               </div>
@@ -131,6 +131,12 @@ export default function Home() {
                 id="value"
                 className="flex flex-row justify-center items-center gap-1"
               >
+                <div
+                  id="numbered-quality"
+                  className="flex items-center justify-center mr-2"
+                >
+                  {campaignData.minimumScore}
+                </div>
                 {[...Array(diamondFullCount)].map((_, i) => (
                   <img src="/diamond_full.png" className="w-5" key={i} />
                 ))}
@@ -154,12 +160,12 @@ export default function Home() {
               </div>
             </div>
 
-            <div id="unit-price" className="flex flex-col gap-0.5">
+            <div id="initial-stake-part" className="flex flex-col gap-0.5">
               <div id="label" className="text-gray-400 text-sm">
-                Unit Price
+                Initial Stake
               </div>
               <div id="value" className="text-white text-xl">
-                {campaignData.unit_price} USDT
+                {campaignData.reward_pool}
               </div>
             </div>
           </div>

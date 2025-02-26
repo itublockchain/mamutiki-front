@@ -14,7 +14,7 @@ export default function RoadmapPart() {
       <div id="vertical-line-1" className="h-8 w-0 border border-white" />
 
       <div id="q1-part" className="flex flex-col w-[64%] items-center gap-5">
-        <div id="title-part" className="text-white text-4xl">
+        <div id="title-part" className="text-primary text-4xl">
           Q1
         </div>
 
@@ -54,7 +54,7 @@ export default function RoadmapPart() {
       </div>
 
       <div id="q2-part" className="flex flex-col w-[64%] items-center gap-5">
-        <div id="title-part" className="text-white text-4xl">
+        <div id="title-part" className="text-primary text-4xl">
           Q2
         </div>
         <div id="q2-content" className="flex flex-row gap-4">
@@ -93,7 +93,7 @@ export default function RoadmapPart() {
       </div>
 
       <div id="q3-part" className="flex flex-col w-[64%] items-center gap-5">
-        <div id="title-part" className="text-white text-4xl">
+        <div id="title-part" className="text-primary text-4xl">
           Q3
         </div>
 

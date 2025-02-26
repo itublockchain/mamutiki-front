@@ -13,8 +13,8 @@ export default function LandingPage() {
         className="flex flex-col relative w-full self-center gap-20 z-10"
       >
         <LandingPart />
-        <RoadmapPart />
         <SpecsPart />
+        <RoadmapPart />
         <HowToStartPart />
       </div>
     </>

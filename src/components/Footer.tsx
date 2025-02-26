@@ -19,10 +19,12 @@ export default function Footer() {
         <div id="resources-part" className="flex flex-col gap-2 border-red-500">
           <div id="label">Resources</div>
           <div id="contents" className="flex flex-col gap-2">
-            <div>Leaderboard</div>
-            <div>MAMUT</div>
-            <div>Blog</div>
-            <div className="text-primary">Contact us</div>
+            <Link href="/">Leaderboard</Link>
+            <Link href="/">MAMUT</Link>
+            <Link href="/">Blog</Link>
+            <Link href="/" className="text-primary">
+              Contact us
+            </Link>
           </div>
         </div>
 
@@ -40,7 +42,8 @@ export default function Footer() {
               <div id="label">@datagoraxyz</div>
             </Link>
 
-            <div
+            <Link
+              href="/"
               id="telegram-part"
               className="flex flex-row gap-3 items-center justify-center"
             >
@@ -48,17 +51,18 @@ export default function Footer() {
                 <img src="/telegram.png" alt="telegram" className="w-3 h-3" />
               </div>
               <div id="label">@datagoraxyz</div>
-            </div>
+            </Link>
 
-            <div
+            <Link
               id="discord-part"
               className="flex flex-row gap-3 items-center justify-center"
+              href="/"
             >
               <div id="icon-part" className="flex">
                 <img src="/discord.png" alt="discord" className="w-3 h-3" />
               </div>
               <div id="label">@datagoraxyz</div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
@@ -76,12 +80,13 @@ export default function Footer() {
             <Input size="sm" placeholder={"abc@def.com"} />
           </div>
           <div id="button-part" className="flex items-center">
-            <div
+            <Link
               id="button"
               className="flex items-start justify-center text-black py-1 px-2 bg-primary rounded-md text-sm cursor-pointer"
+              href="/"
             >
               Subscribe
-            </div>
+            </Link>
           </div>
         </div>
       </div>

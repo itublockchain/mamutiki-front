@@ -10,7 +10,7 @@ import {
 } from "@heroui/react";
 import { createDecipheriv } from "crypto";
 import { PinataSDK } from "pinata-web3";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   isOpen: boolean;
@@ -31,6 +31,14 @@ export function VisitSubmittedDataModal({
 
   const [privateKey, setPrivateKey] = useState<null | string>(null);
 
+  const [submittedKeyValid, setSubmittedKeyValid] = useState<null | boolean>(
+    null
+  );
+
+  useEffect(() => {
+    simulateDownload();
+  }, [privateKey]);
+
   const handleOnFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -41,15 +49,30 @@ export function VisitSubmittedDataModal({
 
     const reader = new FileReader();
     reader.onload = (e: ProgressEvent<FileReader>) => {
-      const privateKeyFromFile = e.target?.result as string | null;
-
-      if (!privateKeyFromFile) {
-        console.error("Error: Failed to read private key from file.");
+      const fileContent = e.target?.result as string | null;
+      if (!fileContent) {
+        console.error("Error: Failed to read file content.");
         setPrivateKey(null);
         return;
       }
 
-      setPrivateKey(privateKeyFromFile);
+      try {
+        // Parse the JSON content from the file
+        const keyData = JSON.parse(fileContent);
+        // Check if the expected property exists
+        if (!keyData.private_key) {
+          console.error("Error: Private key not found in JSON file.");
+          setPrivateKey(null);
+          return;
+        }
+        // Optionally, you could store the entire keyData object if needed:
+        // setPrivateKey(keyData);
+        // For now, we'll just store the private key value
+        setPrivateKey(keyData.private_key);
+      } catch (error) {
+        console.error("Error: Failed to parse JSON file.", error);
+        setPrivateKey(null);
+      }
     };
 
     reader.onerror = () => {
@@ -60,6 +83,104 @@ export function VisitSubmittedDataModal({
     };
 
     reader.readAsText(file);
+  };
+
+  const simulateDownload = async () => {
+    if (!submittedDataDocData) return setSubmittedKeyValid(null);
+
+    if (isDownloadLoading) return setSubmittedKeyValid(null);
+    if (privateKey === null) return setSubmittedKeyValid(null);
+
+    setIsDownloadLoading(true);
+
+    const encryptedData = await handleDownloadedEncryptedData(
+      submittedDataDocData.storeCid
+    );
+    if (!encryptedData) {
+      setIsDownloadLoading(false);
+      return setSubmittedKeyValid(false);
+    }
+
+    const aesKey = await handleDecryptEncryptedAESKey(
+      submittedDataDocData.keyForDecryption,
+      privateKey
+    );
+    if (!aesKey) {
+      console.error("Error: Failed to decrypt AES key.");
+      setIsDownloadLoading(false);
+      return setSubmittedKeyValid(false);
+    }
+
+    const decryptedContent =
+      await handleDecryptEncryptedContentWithDecryptedAESKey(
+        encryptedData,
+        aesKey
+      );
+    if (!decryptedContent) {
+      console.error("Error: Failed to decrypt content.");
+      setIsDownloadLoading(false);
+      return setSubmittedKeyValid(false);
+    }
+
+    const cleanedData = cleanData(decryptedContent);
+    if (!cleanedData) {
+      console.error("Error: Failed to clean data.");
+      setIsDownloadLoading(false);
+      return setSubmittedKeyValid(false);
+    }
+
+    setIsDownloadLoading(false);
+    setSubmittedKeyValid(true);
+  };
+
+  const handleDownloadButton = async () => {
+    if (!submittedDataDocData) return;
+
+    if (isDownloadLoading) return;
+    if (privateKey === null) return;
+
+    setIsDownloadLoading(true);
+
+    const encryptedData = await handleDownloadedEncryptedData(
+      submittedDataDocData.storeCid
+    );
+    if (!encryptedData) {
+      return setIsDownloadLoading(false);
+    }
+
+    const aesKey = await handleDecryptEncryptedAESKey(
+      submittedDataDocData.keyForDecryption,
+      privateKey
+    );
+    if (!aesKey) {
+      console.error("Error: Failed to decrypt AES key.");
+      return setIsDownloadLoading(false);
+    }
+
+    const decryptedContent =
+      await handleDecryptEncryptedContentWithDecryptedAESKey(
+        encryptedData,
+        aesKey
+      );
+    if (!decryptedContent) {
+      console.error("Error: Failed to decrypt content.");
+      return setIsDownloadLoading(false);
+    }
+
+    const cleanedData = cleanData(decryptedContent);
+    if (!cleanedData) {
+      console.error("Error: Failed to clean data.");
+      return setIsDownloadLoading(false);
+    }
+
+    const isDownloaded = downloadDecryptedContentToComputer(cleanedData);
+    if (!isDownloaded) {
+      console.error("Error: Failed to download data.");
+      return setIsDownloadLoading(false);
+    }
+
+    setIsDownloadLoading(false);
+    setIsOpen(false);
   };
 
   const handleDownloadedEncryptedData = async (dataCID: string) => {
@@ -155,16 +276,6 @@ export function VisitSubmittedDataModal({
     }
   };
 
-  const cleanData = (data: string) => {
-    try {
-      const cleanedJSON = JSON.parse(JSON.parse(data)) as JSON;
-      return JSON.stringify(cleanedJSON);
-    } catch (error) {
-      console.error("Error: Failed to clean data", error);
-      return false;
-    }
-  };
-
   const downloadDecryptedContentToComputer = (data: string) => {
     try {
       // Create a Blob with the JSON data
@@ -193,54 +304,14 @@ export function VisitSubmittedDataModal({
     }
   };
 
-  const handleDownloadButton = async () => {
-    if (!submittedDataDocData) return;
-
-    if (isDownloadLoading) return;
-    if (privateKey === null) return;
-
-    setIsDownloadLoading(true);
-
-    const encryptedData = await handleDownloadedEncryptedData(
-      submittedDataDocData.storeCid
-    );
-    if (!encryptedData) {
-      return setIsDownloadLoading(false);
+  const cleanData = (data: string) => {
+    try {
+      const cleanedJSON = JSON.parse(JSON.parse(data)) as JSON;
+      return JSON.stringify(cleanedJSON);
+    } catch (error) {
+      console.error("Error: Failed to clean data", error);
+      return false;
     }
-
-    const aesKey = await handleDecryptEncryptedAESKey(
-      submittedDataDocData.keyForDecryption,
-      privateKey
-    );
-    if (!aesKey) {
-      console.error("Error: Failed to decrypt AES key.");
-      return setIsDownloadLoading(false);
-    }
-
-    const decryptedContent =
-      await handleDecryptEncryptedContentWithDecryptedAESKey(
-        encryptedData,
-        aesKey
-      );
-    if (!decryptedContent) {
-      console.error("Error: Failed to decrypt content.");
-      return setIsDownloadLoading(false);
-    }
-
-    const cleanedData = cleanData(decryptedContent);
-    if (!cleanedData) {
-      console.error("Error: Failed to clean data.");
-      return setIsDownloadLoading(false);
-    }
-
-    const isDownloaded = downloadDecryptedContentToComputer(cleanedData);
-    if (!isDownloaded) {
-      console.error("Error: Failed to download data.");
-      return setIsDownloadLoading(false);
-    }
-
-    setIsDownloadLoading(false);
-    setIsOpen(false);
   };
 
   if (!submittedDataDocData) {
@@ -256,10 +327,10 @@ export function VisitSubmittedDataModal({
           </ModalHeader>
           <ModalBody>
             <div id="data-submitter" className="flex flex-col">
-              <div id="name" className="text-default-500 text-xs">
+              <div id="name" className="flex text-default-500 text-xs">
                 Submitter ID
               </div>
-              <div id="id" className="text-sm">
+              <div id="id" className="flex w-[100%] overflow-y-auto text-sm">
                 {submittedDataDocData.contributor}
               </div>
             </div>
@@ -282,7 +353,16 @@ export function VisitSubmittedDataModal({
               </div>
             </div>
 
-            <Input type="file" accept=".txt" onChange={handleOnFileChange} />
+            <Input type="file" accept=".json" onChange={handleOnFileChange} />
+
+            {submittedKeyValid === false && (
+              <div
+                id="warning"
+                className="flex items-center justify-center text-danger-500"
+              >
+                Wrong Key!
+              </div>
+            )}
           </ModalBody>
           <ModalFooter>
             <Button color="danger" variant="light" onPress={handleCancelButton}>
@@ -292,7 +372,7 @@ export function VisitSubmittedDataModal({
               color="primary"
               onPress={handleDownloadButton}
               isLoading={isDownloadLoading}
-              isDisabled={privateKey === null}
+              isDisabled={privateKey === null || submittedKeyValid === false}
               className="text-black"
             >
               Download
