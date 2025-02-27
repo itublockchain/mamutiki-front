@@ -4,7 +4,7 @@ const network = process.env.API_NETWORK as "devnet" | "testnet" | "mainnnet";
 
 const url =
   network === "testnet"
-    ? process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL
+    ? process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_BARDOCK_URL
     : network === "mainnnet"
     ? process.env.NEXT_PUBLIC_MOVEMENT_MAIN_NETWORK_URL
     : undefined;

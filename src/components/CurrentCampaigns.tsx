@@ -44,14 +44,14 @@ export function CurrentCampaigns() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { getAllCampaigns, isAptosClientReady } = useAptosClient();
+  const { getAllActiveCampaings, isAptosClientReady } = useAptosClient();
 
   const getInitialCampaings = async () => {
     if (isLoading) return;
 
     setIsLoading(true);
 
-    const campaings = await getAllCampaigns();
+    const campaings = await getAllActiveCampaings();
     if (!campaings) {
       console.error("Error getting campaigns. See other logs.");
       setIsLoading(false);

@@ -15,10 +15,13 @@ import {
   parseCampaignResponse,
 } from "./campaignHelpers";
 
-const ACCOUNT_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX;
+const ACCOUNT_ADDRESS =
+  process.env.NEXT_PUBLIC_MARKETPLACE_ACCOUNT_ADDRESS_WITH_0X_PREFIX;
 
 if (!ACCOUNT_ADDRESS)
-  throw new Error("NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX is not set");
+  throw new Error(
+    "NEXT_PUBLIC_MARKETPLACE_ACCOUNT_ADDRESS_WITH_0X_PREFIX is not set"
+  );
 
 export function useAptosClient() {
   const {
@@ -32,7 +35,7 @@ export function useAptosClient() {
   const [isAptosClientReady, setIsAptosClientReady] = useState(false);
 
   const aptosConfig = useMemo(() => {
-    const fullNode = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_PORTO_URL;
+    const fullNode = process.env.NEXT_PUBLIC_MOVEMENT_TEST_NETWORK_BARDOCK_URL;
 
     // if (networkFromAdaptor && networkFromAdaptor.url) {
     //   fullNode = networkFromAdaptor.url;
@@ -270,6 +273,43 @@ export function useAptosClient() {
       return false;
     }
   };
+
+  const getAllActiveCampaings = async() => {
+    if (!aptosClient) {
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "get_all_active_campaigns",
+    });
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    try {
+      const response = await aptosClient.view({
+        payload: {
+          function: accessFunctionString,
+          functionArguments: [],
+          typeArguments: [],
+        },
+      });
+
+      if (!response[0]) {
+        console.error("Error on getting campaigns: ", response);
+        return false;
+      }
+
+      return (response[0] as GetCampaignFunctionContractResponse[]).map(
+        parseCampaignResponse
+      );
+    } catch (error) {
+      handleError(error, "fetching campaigns");
+      return false;
+    }
+  }
 
   const getCampaignData = async (campaignId: string) => {
     if (!aptosClient) {
@@ -545,7 +585,7 @@ export function useAptosClient() {
     }
 
     if (walletNetworkURL !== currentNetworkURL) {
-      toast.error("Please switch your network to Movement Porto Testnet.");
+      toast.error("Please switch your network to Movement Bardock Testnet.");
       return false;
     }
 
@@ -565,5 +605,6 @@ export function useAptosClient() {
     getTokensFromFaucet,
     getLastCreatedCampaignOfCurrentUser,
     isUsersNetworkCorrect,
+    getAllActiveCampaings
   };
 }

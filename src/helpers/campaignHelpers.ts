@@ -29,7 +29,8 @@ type FunctionAccessStringCreatorProps =
         | "get_all_campaigns"
         | "get_campaign"
         | "get_public_key_for_encryption"
-        | "last_created_campaign";
+        | "last_created_campaign"
+        | "get_all_active_campaigns";
     }
   | {
       moduleName: "contribution_manager";
@@ -57,7 +58,7 @@ export const functionAccessStringCreator = ({
       process.env.NEXT_PUBLIC_TOKEN_ACCOUNT_ADDRESS_WITH_0X_PREFIX || "";
   } else {
     accountAddress =
-      process.env.NEXT_PUBLIC_MODULE_ADDRESS_WITH_0X_PREFIX || "";
+      process.env.NEXT_PUBLIC_MARKETPLACE_ACCOUNT_ADDRESS_WITH_0X_PREFIX || "";
   }
 
   if (!accountAddress) {
