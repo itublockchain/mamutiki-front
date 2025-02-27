@@ -75,7 +75,7 @@ export default function LandingPart() {
 
           <div
             id="buttons-part"
-            className="flex flex-row w-[25%] gap-5 items-center"
+            className="flex flex-row w-[80%] md:w-[25%] gap-5 items-center"
           >
             <div
               id="learn-more-button"
