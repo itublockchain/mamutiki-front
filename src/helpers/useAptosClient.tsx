@@ -69,33 +69,6 @@ export function useAptosClient() {
     setIsAptosClientReady(true);
   }, [aptosClient, aptosConfig, isWalletLoading]);
 
-  const getParsedError = (error: string) => {
-    try {
-      return JSON.parse(error) as {
-        message: string;
-        error_code: string;
-        vm_error_code: string;
-      };
-    } catch {
-      return {
-        message: "Unknown error",
-        error_code: "Unknown error",
-        vm_error_code: "Unknown error",
-      };
-    }
-  };
-
-  const handleError = (error: unknown, context: string) => {
-    if (error === "User Rejected the request") {
-      toast.error("Request rejected by the user.");
-      return;
-    }
-
-    const parsedError = getParsedError(error as string);
-    toast.error(`An error occurred while ${context}: \n${parsedError.message}`);
-    console.error(`Error on ${context}: `, error);
-  };
-
   const createCampaign = async (functionInput: CreateCampaignFunctionInput) => {
     if (!aptosClient) {
       toast.error("AptosClient is not ready.");
@@ -138,7 +111,10 @@ export function useAptosClient() {
       });
       return true;
     } catch (error) {
-      handleError(error, "creating campaign");
+      console.error("Error on creating campaign: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -185,7 +161,10 @@ export function useAptosClient() {
         response[0] as GetCampaignFunctionContractResponse
       );
     } catch (error) {
-      handleError(error, "fetching last created campaign");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -232,7 +211,10 @@ export function useAptosClient() {
       toast.success("Data submitted successfully");
       return true;
     } catch (error) {
-      handleError(error, "submitting data");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -269,12 +251,15 @@ export function useAptosClient() {
         parseCampaignResponse
       );
     } catch (error) {
-      handleError(error, "fetching campaigns");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
 
-  const getAllActiveCampaings = async() => {
+  const getAllActiveCampaings = async () => {
     if (!aptosClient) {
       return false;
     }
@@ -306,10 +291,13 @@ export function useAptosClient() {
         parseCampaignResponse
       );
     } catch (error) {
-      handleError(error, "fetching campaigns");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
-  }
+  };
 
   const getCampaignData = async (campaignId: string) => {
     if (!aptosClient) {
@@ -342,7 +330,10 @@ export function useAptosClient() {
         response[0] as GetCampaignFunctionContractResponse
       );
     } catch (error) {
-      handleError(error, "fetching campaign data");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -395,7 +386,10 @@ export function useAptosClient() {
         return data;
       });
     } catch (error) {
-      handleError(error, "fetching contributions");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -432,7 +426,10 @@ export function useAptosClient() {
       toast.success("Subscribed to premium successfully!");
       return true;
     } catch (error) {
-      handleError(error, "subscribing to premium");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -478,7 +475,10 @@ export function useAptosClient() {
 
       return functionResponse;
     } catch (error) {
-      handleError(error, "fetching subscription status");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -516,7 +516,10 @@ export function useAptosClient() {
 
       return convertBalance(response[0] as number);
     } catch (error) {
-      handleError(error, "fetching account balance");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -558,7 +561,10 @@ export function useAptosClient() {
       toast.success("Tokens received from faucet successfully!");
       return true;
     } catch (error) {
-      handleError(error, "receiving tokens from faucet");
+      console.error("Error: ", error);
+
+      debugError(error);
+
       return false;
     }
   };
@@ -592,6 +598,101 @@ export function useAptosClient() {
     return true;
   };
 
+  // @ts-expect-error - Error is not typed.
+  const debugError = (error) => {
+    if (typeof error === "object") {
+      error = JSON.stringify(error);
+    }
+
+    error = error.toString();
+
+    if (error.includes("ERR_NOT_ENOUGH_BALANCE")) {
+      toast.error("Not enough balance");
+    } else if (error.includes("ERR_ESCROW_NOT_FOUND")) {
+      toast.error("Escrow not found");
+    } else if (error.includes("ERR_UNAUTHORIZED")) {
+      toast.error("Unauthorized");
+    } else if (error.includes("MIN_FEE_EXCEED")) {
+      toast.error("Minimum fee exceed");
+    } else if (error.includes("MAX_FEE_EXCEED")) {
+      toast.error("Maximum fee exceed");
+    } else if (error.includes("MIN_DIVISOR_EXCEED")) {
+      toast.error("Minimum divisor exceed");
+    } else if (error.includes("ERR_CAMPAIGN_NOT_FOUND")) {
+      toast.error("Campaign not found");
+    } else if (error.includes("ERR_INVALID_DATA_COUNT")) {
+      toast.error("Invalid data count");
+    } else if (error.includes("ERR_NO_VALID_SIGNATURE")) {
+      toast.error("No valid signature");
+    } else if (error.includes("ERR_ALREADY_CONTRIBUTED")) {
+      toast.error("Already contributed");
+    } else if (error.includes("ERR_INSUFFICIENT_CONTRIBUTION")) {
+      toast.error("Insufficient contribution");
+    } else if (error.includes("ERR_INSUFFICIENT_SCORE")) {
+      toast.error("Insufficient score");
+    } else if (error.includes("ERR_INVALID_CAMPAIGN_ID")) {
+      toast.error("Invalid campaign id");
+    } else if (error.includes("ERR_INVALID_STORE_CID")) {
+      toast.error("Invalid store cid");
+    } else if (error.includes("ERR_INVALID_SCORE")) {
+      toast.error("Invalid score");
+    } else if (error.includes("ERR_INVALID_KEY_FOR_DECRYPTION")) {
+      toast.error("Invalid key for decryption");
+    } else if (error.includes("ERR_INVALID_SIGNATURE")) {
+      toast.error("Invalid signature");
+    } else if (error.includes("ERR_EXCEED_MAX_SCORE")) {
+      toast.error("Exceed max score");
+    } else if (error.includes("ERR_NO_SUBSCRIPTION")) {
+      toast.error("No subscription");
+    } else if (error.includes("ERR_NO_CAMPAIGN")) {
+      toast.error("No campaign found");
+    } else if (error.includes("ERR_INSUFFICIENT_FUNDS")) {
+      toast.error("Insufficient funds");
+    } else if (error.includes("ERR_INVALID_TITLE")) {
+      toast.error("Invalid title");
+    } else if (error.includes("ERR_INVALID_DESCRIPTION")) {
+      toast.error("Invalid description");
+    } else if (error.includes("ERR_INVALID_PROMPT")) {
+      toast.error("Invalid prompt");
+    } else if (error.includes("ERR_INVALID_UNIT_PRICE")) {
+      toast.error("Invalid unit price");
+    } else if (error.includes("ERR_INVALID_MINIMUM_CONTRIBUTION")) {
+      toast.error("Invalid minimum contribution");
+    } else if (error.includes("ERR_INVALID_MINIMUM_SCORE")) {
+      toast.error("Invalid minimum score");
+    } else if (error.includes("ERR_INVALID_REWARD_POOL")) {
+      toast.error("Invalid reward pool");
+    } else if (error.includes("ERR_INVALID_PUBLIC_KEY_FOR_ENCRYPTION")) {
+      toast.error("Invalid public key for encryption");
+    } else if (error.includes("ERR_EXCEED_MAX_SCORE")) {
+      toast.error("Exceed max score");
+    } else if (error.includes("ERR_CAMPAIGN_NOT_ACTIVE")) {
+      toast.error("Campaign not active");
+    } else if (error.includes("ERR_NOT_CAMPAIGN_CREATOR")) {
+      toast.error("Not campaign creator");
+    } else if (error.includes("ENOT_CREATOR")) {
+      toast.error("Not creator");
+    } else if (error.includes("EINSUFFICIENT_BALANCE")) {
+      toast.error("Insufficient balance");
+    } else if (error.includes("EINVALID_PRICE")) {
+      toast.error("Invalid price");
+    } else if (error.includes("EACTIVE_SUBSCRIPTION_EXISTS")) {
+      toast.error("Active subscription exists");
+    } else if (error.includes("ERR_NOT_CREATOR")) {
+      toast.error("Not creator");
+    } else if (error.includes("ERR_KEY_ALREADY_EXISTS")) {
+      toast.error("Key already exists");
+    } else if (error.includes("ERR_KEY_NOT_FOUND")) {
+      toast.error("Key not found");
+    } else if (error.includes("account_not_found")) {
+      toast.error(
+        "Your account is not fully enabled yet. Please transfer some tokens to your account to enable it."
+      );
+    } else {
+      toast.error("An error occurred.");
+    }
+  };
+
   return {
     createCampaign,
     getAllCampaigns,
@@ -605,6 +706,6 @@ export function useAptosClient() {
     getTokensFromFaucet,
     getLastCreatedCampaignOfCurrentUser,
     isUsersNetworkCorrect,
-    getAllActiveCampaings
+    getAllActiveCampaings,
   };
 }
