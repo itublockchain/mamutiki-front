@@ -15,7 +15,7 @@ export default function SpecsPart() {
       </div>
       <div
         id="content"
-        className="flex flex-col gap-5 md:grid md:grid-cols-4 md:grid-rows-4 md:gap-4 min-h-screen"
+        className="flex flex-col gap-5 md:grid md:grid-cols-4 md:grid-rows-4 md:gap-4 md:min-h-screen"
       >
         {/* Top-Left Large Card */}
 

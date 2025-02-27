@@ -17,6 +17,8 @@ export default function LandingPage() {
         <RoadmapPart />
         <HowToStartPart />
       </div>
+
+      
     </>
   );
 }

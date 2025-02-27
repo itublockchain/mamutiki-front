@@ -42,12 +42,12 @@ export default function HowToStartPart() {
 
       <div
         id="ready-part"
-        className="flex flex-row justify-center items-center gap-5"
+        className="flex flex-row flex-wrap justify-center items-center gap-3 md:gap-5"
       >
-        <div id="text-part" className="flex text-2xl font-bold text-white">
+        <div id="text-part" className="flex text-lg md:text-2xl font-bold text-white">
           Ready to Use
         </div>
-        <div id="image-part" className="flex">
+        <div id="image-part" className="flex h-[33px] w-[183px] md:h-[44px] md:w-[244px]">
           <Image
             src="/step/ready_to_use.svg"
             alt="Ready To Use Image"

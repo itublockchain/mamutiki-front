@@ -58,76 +58,84 @@ export function SubmittedDatasSection({ campaignId }: Props) {
     );
 
   return (
-    <>
-      <Table removeWrapper>
-        <TableHeader
-          columns={[
-            {
-              key: "address",
-              label: "Address",
-            },
-            {
-              key: "share",
-              label: "Share",
-            },
+    <div id="root" className="flex flex-col gap-3">
+      <div id="label" className="flex text-gray-500">
+        Submissions
+      </div>
 
-            {
-              key: "aiScore",
-              label: "AI Score",
-            },
+      <div id="table-container" className="flex overflow-auto">
+        <Table removeWrapper>
+          <TableHeader
+            columns={[
+              {
+                key: "address",
+                label: "Address",
+              },
+              {
+                key: "share",
+                label: "Share",
+              },
 
-            {
-              key: "dataAmount",
-              label: "Data Amount",
-            },
-            {
-              key: "action",
-              label: "Action",
-            },
-          ]}
-        >
-          {(column) => (
-            <TableColumn key={column.key}>{column.label}</TableColumn>
-          )}
-        </TableHeader>
+              {
+                key: "aiScore",
+                label: "AI Score",
+              },
 
-        <TableBody
-          items={submittedDatas.map((item, index) => ({
-            key: index,
-            address:
-              item.contributor.slice(0, 4) + "..." + item.contributor.slice(-7),
-            share: "20%",
-            aiScore: item.score,
-            dataAmount: item.dataCount,
-            action: (
-              <ArrowsRightLeftIcon
-                className="w-5 cursor-pointer"
-                onClick={() => {
-                  handleVisitSubmittedData(index);
-                }}
-              />
-            ),
-          }))}
-        >
-          {(item) => (
-            <TableRow
-              key={item.key}
-              className="border-b border-primary/30 cursor-pointer"
-              onClick={() => handleVisitSubmittedData(item.key)}
-            >
-              {(columnKey) => (
-                <TableCell>{getKeyValue(item, columnKey)}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+              {
+                key: "dataAmount",
+                label: "Data Amount",
+              },
+              {
+                key: "action",
+                label: "Action",
+              },
+            ]}
+          >
+            {(column) => (
+              <TableColumn key={column.key}>{column.label}</TableColumn>
+            )}
+          </TableHeader>
 
-      <VisitSubmittedDataModal
-        isOpen={isVisitSubmittedDataModalOpen}
-        setIsOpen={setIsVisitSubmittedDataModalOpen}
-        submittedDataDocData={submittedDatas[submittedDataDocDataIndex]}
-      />
-    </>
+          <TableBody
+            items={submittedDatas.map((item, index) => ({
+              key: index,
+              address:
+                item.contributor.slice(0, 4) +
+                "..." +
+                item.contributor.slice(-7),
+              share: "20%",
+              aiScore: item.score,
+              dataAmount: item.dataCount,
+              action: (
+                <ArrowsRightLeftIcon
+                  className="w-5 cursor-pointer"
+                  onClick={() => {
+                    handleVisitSubmittedData(index);
+                  }}
+                />
+              ),
+            }))}
+          >
+            {(item) => (
+              <TableRow
+                key={item.key}
+                className="border-b border-primary/30 cursor-pointer"
+                onClick={() => handleVisitSubmittedData(item.key)}
+              >
+                {(columnKey) => (
+                  <TableCell>{getKeyValue(item, columnKey)}</TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+
+        <VisitSubmittedDataModal
+          isOpen={isVisitSubmittedDataModalOpen}
+          setIsOpen={setIsVisitSubmittedDataModalOpen}
+          submittedDataDocData={submittedDatas[submittedDataDocDataIndex]}
+        />
+      </div>
+    </div>
   );
 }

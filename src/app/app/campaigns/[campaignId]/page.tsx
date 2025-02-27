@@ -1,5 +1,6 @@
 "use client";
 
+import CreateCampaignFloatingButton from "@/components/CreateCampaignFloatingButton";
 import { SubmittedDatasSection } from "@/components/SubmittedDatasSection";
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { ConnectWalletModal } from "@/modals/ConnectWalletModal";
@@ -81,7 +82,7 @@ export default function Home() {
     <>
       <div
         id="campaign-detail-page-root"
-        className="flex flex-col min-h-screen p-10 px-20 gap-8"
+        className="flex flex-col min-h-screen p-5 md:p-10 md:px-20 gap-8"
       >
         <div
           id="title-description-part"
@@ -109,9 +110,12 @@ export default function Home() {
           </div>
         </div>
 
-        <div id="specs" className="flex flex-row w-full justify-between">
+        <div
+          id="specs"
+          className="flex flex-row flex-wrap md:flex-nowrap w-full justify-between"
+        >
           <div
-            id="initial-stake-and-min-quality-part"
+            id="unit-price-and-min-quality-part"
             className="flex flex-row gap-8"
           >
             <div id="unit-price" className="flex flex-col gap-0.5">
@@ -133,7 +137,7 @@ export default function Home() {
               >
                 <div
                   id="numbered-quality"
-                  className="flex items-center justify-center mr-2"
+                  className="hidden md:flex items-center justify-center mr-2"
                 >
                   {campaignData.minimumScore}
                 </div>
@@ -148,8 +152,8 @@ export default function Home() {
           </div>
 
           <div
-            id="remaining-stake-and-unit-price"
-            className="flex flex-row gap-8"
+            id="remaining-stake-and-initial-stake-parts"
+            className="flex flex-row gap-8 pt-5 md:pt-0"
           >
             <div id="remaining-stake-part" className="flex flex-col gap-0.5">
               <div id="label" className="text-gray-400 text-sm">
@@ -229,6 +233,8 @@ export default function Home() {
         isOpen={isWalletModalOpen}
         setIsOpen={setIsWalletModalOpen}
       />
+
+      <CreateCampaignFloatingButton />
     </>
   );
 }
