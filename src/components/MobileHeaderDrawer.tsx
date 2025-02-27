@@ -1,8 +1,7 @@
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { ArrowUturnLeftIcon } from "@heroicons/react/24/solid";
-import { Divider, Drawer, DrawerContent } from "@heroui/react";
+import { Drawer, DrawerContent } from "@heroui/react";
 import Link from "next/link";
 import React from "react";
 
