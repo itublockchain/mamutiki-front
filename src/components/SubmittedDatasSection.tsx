@@ -80,31 +80,56 @@ export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
       <div id="table-container" className="flex overflow-auto">
         <Table removeWrapper>
           <TableHeader
-            columns={[
-              {
-                key: "address",
-                label: "Address",
-              },
+            columns={
+              isOwner
+                ? [
+                    {
+                      key: "address",
+                      label: "Address",
+                    },
 
-              {
-                key: "aiScore",
-                label: "AI Score",
-              },
+                    {
+                      key: "aiScore",
+                      label: "AI Score",
+                    },
 
-              {
-                key: "dataAmount",
-                label: "Data Amount",
-              },
+                    {
+                      key: "dataAmount",
+                      label: "Data Amount",
+                    },
 
-              {
-                key: "reward",
-                label: "Reward",
-              },
-              {
-                key: "action",
-                label: "Action",
-              },
-            ]}
+                    {
+                      key: "reward",
+                      label: "Reward",
+                    },
+
+                    {
+                      key: "action",
+                      label: "Action",
+                    },
+                  ]
+                : [
+                    {
+                      key: "address",
+                      label: "Address",
+                    },
+
+                    {
+                      key: "aiScore",
+                      label: "AI Score",
+                    },
+
+                    {
+                      key: "dataAmount",
+                      label: "Data Amount",
+                    },
+
+                    {
+                      key: "reward",
+                      label: "Reward",
+                    },
+                  ]
+            }
           >
             {(column) => (
               <TableColumn key={column.key}>{column.label}</TableColumn>

@@ -13,9 +13,10 @@ import { usePathname } from "next/navigation";
 
 import { Spinner } from "@heroui/react";
 import MobileHeaderDrawer from "./MobileHeaderDrawer";
+import toast from "react-hot-toast";
 
 export function Header() {
-  const { connected, account } = useWallet();
+  const { connected, account, disconnect } = useWallet();
 
   const {
     isUsersNetworkCorrect,
@@ -79,6 +80,14 @@ export function Header() {
     setBalance(balance.toFixed(2));
   };
 
+  const handleCopyAccountAddress = () => {
+    if (!account) return;
+
+    navigator.clipboard.writeText(account.address);
+
+    toast.success("Address copied to clipboard!");
+  };
+
   return (
     <>
       <div
@@ -95,7 +104,7 @@ export function Header() {
          */}
         <div
           id="left-part"
-          className="flex flex-row gap-7 items-center text-sm"
+          className="flex flex-row gap-7 items-center text-md"
         >
           <Link href="/" className="cursor-pointer">
             <img src="/logo.png" className="w-8 h-8" />
@@ -112,6 +121,7 @@ export function Header() {
           <Link
             href="https://docs.datagora.xyz"
             className="hidden md:flex text-gray-300"
+            target="_blank"
           >
             Docs
           </Link>
@@ -129,13 +139,16 @@ export function Header() {
            * Connect Wallet Button for desktop view.
            */}
           {!connected && (
-            <div
+            <Link
+              href="/app"
               id="connect-button"
-              className="hidden md:flex items-center cursor-pointer justify-center text-xs bg-primary py-1 px-3 rounded-xl text-black"
-              onClick={handleConnectButton}
+              className="hidden md:flex items-center cursor-pointer justify-center text-md bg-primary py-1 px-3 rounded-xl text-black"
+              style={{
+                display: pathname === "/app" ? "none" : "flex",
+              }}
             >
-              Connect Wallet
-            </div>
+              Launch App
+            </Link>
           )}
 
           {/**
@@ -168,7 +181,7 @@ export function Header() {
           {connected && (
             <div
               id="create-button"
-              className="hidden md:flex flex-row items-center text-xs gap-2 text-primary cursor-pointer"
+              className="hidden md:flex flex-row items-center text-md gap-2 text-primary cursor-pointer"
               onClick={() => {
                 getTokensFromFaucet();
               }}
@@ -183,7 +196,7 @@ export function Header() {
           {connected && (
             <div
               id="create-button"
-              className="hidden md:flex flex-row items-center text-xs gap-2 text-primary cursor-pointer"
+              className="hidden md:flex flex-row items-center text-md gap-2 text-primary cursor-pointer"
               onClick={handleCreateButtonAtHeader}
             >
               Create Campaign
@@ -202,14 +215,18 @@ export function Header() {
           {connected && (
             <div
               id="user-part"
-              className="flex flex-row gap-4 items-center justify-center bg-white/10 rounded-2xl md:py-1.5 md:px-3"
+              className="flex flex-row  gap-4 items-center justify-center bg-white/10 rounded-2xl p-2 md:py-1.5 md:px-3"
             >
               <img
                 src="https://picsum.photos/200?random=1"
-                className="w-7 h-7 rounded-full"
+                className="w-7 h-7 rounded-full cursor-pointer"
+                onClick={handleCopyAccountAddress}
               />
 
-              <div className="hidden md:flex text-xs text-gray-300">
+              <div
+                className="hidden md:flex text-xs text-gray-300 cursor-pointer"
+                onClick={handleCopyAccountAddress}
+              >
                 {account?.address.slice(0, 8) +
                   "..." +
                   account?.address.slice(-4)}
@@ -226,7 +243,7 @@ export function Header() {
               />
 
               <div
-                id="icon-balnace-parts"
+                id="icon-balance-parts"
                 className="flex items-center justify-center flex-row gap-1"
               >
                 <div
@@ -239,6 +256,16 @@ export function Header() {
                 <div id="token-count" className="flex flex-row text-xs gap-1">
                   {balance === null ? <Spinner size="sm" /> : balance}
                 </div>
+              </div>
+
+              <div
+                id="disconnect-button"
+                className="flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  disconnect();
+                }}
+              >
+                <img src="/header/door.png" className="w-5 h-5" />
               </div>
             </div>
           )}

@@ -87,7 +87,7 @@ export default function Home() {
     const res = await closeCampaignById(Number(id as string));
 
     if (res) {
-      router.push("/app/campaigns");
+      router.push("/app");
     }
 
     setIsCloseLoading(false);
