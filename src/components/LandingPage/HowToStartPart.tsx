@@ -1,6 +1,4 @@
-import React from "react";
 import StepCard from "./StepCard";
-import Image from "next/image";
 
 export default function HowToStartPart() {
   return (
@@ -50,11 +48,8 @@ export default function HowToStartPart() {
         >
           Ready to Use
         </div>
-        <div
-          id="image-part"
-          className="flex justify-center items-center"
-        >
-         <img src="/step/ready_to_use.png" className="h-24" />
+        <div id="image-part" className="flex justify-center items-center">
+          <img src="/step/ready_to_use.png" className="h-24" />
         </div>
       </div>
     </div>

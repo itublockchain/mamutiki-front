@@ -122,7 +122,7 @@ export function CurrentCampaigns() {
   return (
     <div id="active-campaigns-root" className="flex flex-col gap-10">
       <div id="title-description" className="flex flex-col gap-2">
-        <div id="title" className=" text-2xl font-bold">
+        <div id="title" className="text-primary text-2xl font-bold">
           Data Marketplace
         </div>
         <div
@@ -257,7 +257,7 @@ export function CurrentCampaigns() {
           <Spinner />
         </div>
       ) : (
-        <div className="flex flex-row justify-center flex-wrap p-4 md:p-0 gap-5">
+        <div className="flex flex-row flex-wrap p-4 md:p-0 gap-5">
           {sortedCampaings.map((campaign) => (
             <CampaignCard
               id={campaign.id}

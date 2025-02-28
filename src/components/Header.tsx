@@ -69,7 +69,7 @@ export function Header() {
          */}
         <div
           id="left-part"
-          className="flex flex-row gap-7 items-center text-xs"
+          className="flex flex-row gap-7 items-center text-sm"
         >
           <Link href="/" className="cursor-pointer">
             <img src="/logo.png" className="w-8 h-8" />
@@ -79,6 +79,13 @@ export function Header() {
           </Link>
           <Link href="/app" className="hidden md:flex text-gray-300">
             Marketplace
+          </Link>
+
+          <Link
+            href="https://docs.datagora.xyz"
+            className="hidden md:flex text-gray-300"
+          >
+            Docs
           </Link>
         </div>
 
@@ -133,7 +140,9 @@ export function Header() {
                 className="w-7 h-7 rounded-full"
               />
               <div className="hidden md:flex text-xs text-gray-300">
-                {account?.address.slice(0, 15)}...
+                {account?.address.slice(0, 8) +
+                  "..." +
+                  account?.address.slice(-4)}
               </div>
             </div>
           )}

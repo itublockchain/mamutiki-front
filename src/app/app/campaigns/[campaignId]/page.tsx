@@ -155,21 +155,21 @@ export default function Home() {
             id="remaining-stake-and-initial-stake-parts"
             className="flex flex-row gap-8 pt-5 md:pt-0"
           >
-            <div id="remaining-stake-part" className="flex flex-col gap-0.5">
-              <div id="label" className="text-gray-400 text-sm">
-                Remaining Staked
-              </div>
-              <div id="value" className="text-white text-xl">
-                {campaignData.remaining_reward}
-              </div>
-            </div>
-
             <div id="initial-stake-part" className="flex flex-col gap-0.5">
               <div id="label" className="text-gray-400 text-sm">
                 Initial Stake
               </div>
               <div id="value" className="text-white text-xl">
-                {campaignData.reward_pool}
+                {campaignData.reward_pool.toFixed(4)}
+              </div>
+            </div>
+
+            <div id="remaining-stake-part" className="flex flex-col gap-0.5">
+              <div id="label" className="text-gray-400 text-sm">
+                Remaining Staked
+              </div>
+              <div id="value" className="text-white text-xl">
+                {campaignData.remaining_reward.toFixed(4)}
               </div>
             </div>
           </div>

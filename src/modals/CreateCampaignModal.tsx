@@ -11,13 +11,11 @@ import {
   Textarea,
 } from "@heroui/react";
 
-import { ArrowDownCircleIcon } from "@heroicons/react/24/solid";
-
 import { convertBalance } from "@/helpers/campaignHelpers";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 type Props = {
   isModalOpen: boolean;
@@ -418,7 +416,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   return (
     <>
       <Modal
-        isOpen={isModalOpen}
+        isOpen={true}
         onClose={handleCancelButton}
         scrollBehavior="outside"
       >
@@ -521,24 +519,38 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               Plase download your private key and keep it safe. You will need it
               to decrypt the data.
             </div>
+
             <Input
+              className="text-xs"
               value={
                 (dataKeyPair &&
                   dataKeyPair.privateKey.slice(
                     dataKeyPair.privateKey.length - 50,
-                    dataKeyPair.privateKey.length - 20
+                    dataKeyPair.privateKey.length - 15
                   ) + "...") ||
                 "Please create a key pair"
               }
               label="Private Key"
               endContent={
-                <Button onPress={handleDownloadPrivateKeyButton}>
-                  <ArrowDownCircleIcon />
-                </Button>
+                <div className="flex flex-row items-center justify-end gap-5 w-[30%] h-full">
+                  <div
+                    id="download-icon"
+                    className="flex justify-center items-center cursor-pointer"
+                    onClick={handleDownloadPrivateKeyButton}
+                  >
+                    <img src="/campaign/download.png" className="w-6 h-6" />
+                  </div>
+
+                  <div
+                    id="shuffle-icon"
+                    className="flex justify-center items-center cursor-pointer"
+                    onClick={handleCreateNewDataKeyPair}
+                  >
+                    <img src="/campaign/shufflee.png" className="w-6 h-6" />
+                  </div>
+                </div>
               }
             />
-
-            <Button onPress={handleCreateNewDataKeyPair}>Create New Key</Button>
 
             {creationError && (
               <div className="text-xs self-center text-danger-500">

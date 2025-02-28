@@ -58,6 +58,8 @@ export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
   };
 
   const handleVisitSubmittedData = (index: number) => {
+    if (!isOwner) return;
+
     setSubmittedDataDocDataIndex(index);
     setIsVisitSubmittedDataModalOpen(true);
   };
