@@ -419,6 +419,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
         isOpen={isModalOpen}
         onClose={handleCancelButton}
         scrollBehavior="outside"
+        size="xl"
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
@@ -432,7 +433,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               placeholder="Enter title for your campaign..."
               onChange={handleTitleChange}
               value={title}
-              maxLength={120}
+              minLength={15}
+              maxLength={100}
             />
 
             <Textarea
@@ -441,19 +443,20 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               placeholder="Enter description for your campaign..."
               onChange={handleDescriptionChange}
               value={description}
-              maxLength={1200}
+              minLength={50}
+              maxLength={2000}
             />
 
             <Input
               isRequired
-              label="Unit Price (APT)"
+              label="Unit Price ($DATA)"
               onChange={handleUnitPriceChange}
               value={unitPrice.toString()}
             />
 
             <Input
               isRequired
-              label="Staked Balance (APT)"
+              label="Staked Balance ($DATA)"
               onChange={handleStakedBalanceChange}
               value={stakedBalance.toString()}
             />
@@ -467,7 +470,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             />
 
             <Slider
-              className="max-w-md"
+              className=""
               label="Select a minimum quality score"
               marks={[
                 {
@@ -491,7 +494,6 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
             />
 
             <Slider
-              className="max-w-md"
               label="Select a minimum contribution count (Premium)"
               marks={[
                 {
@@ -525,7 +527,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               value={
                 (dataKeyPair &&
                   dataKeyPair.privateKey.slice(
-                    dataKeyPair.privateKey.length - 50,
+                    dataKeyPair.privateKey.length - 60,
                     dataKeyPair.privateKey.length - 15
                   ) + "...") ||
                 "Please create a key pair"

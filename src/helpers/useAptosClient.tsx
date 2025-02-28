@@ -493,7 +493,7 @@ export function useAptosClient() {
     }
 
     const accessFunctionString = functionAccessStringCreator({
-      moduleName: "mamu",
+      moduleName: "DATA",
       functionName: "get_balance",
     });
     if (!accessFunctionString) {
@@ -534,7 +534,7 @@ export function useAptosClient() {
     }
 
     const accessFunctionString = functionAccessStringCreator({
-      moduleName: "mamu",
+      moduleName: "DATA",
       functionName: "faucet",
     });
     if (!accessFunctionString) {

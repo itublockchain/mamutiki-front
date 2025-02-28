@@ -1,5 +1,6 @@
 import { useAptosClient } from "@/helpers/useAptosClient";
 import { GetSubscriptionStatusResponse } from "@/types/Contract";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   Button,
   Modal,
@@ -22,6 +23,8 @@ export default function SubscribeModal({ isOpen, setIsOpen }: Props) {
   const { subscribePremium, isAptosClientReady, getSubscriptionStatus } =
     useAptosClient();
 
+  const { account } = useWallet();
+
   const handleCancelButton = () => {
     setIsOpen(false);
   };
@@ -30,10 +33,8 @@ export default function SubscribeModal({ isOpen, setIsOpen }: Props) {
     useState<GetSubscriptionStatusResponse | null>(null);
 
   useEffect(() => {
-    if (!isAptosClientReady) return;
-
-    handleGetSubscriptionStatus();
-  }, [isAptosClientReady]);
+    if (isAptosClientReady && account) handleGetSubscriptionStatus();
+  }, [isAptosClientReady, account]);
 
   const handleSubscribeButton = async () => {
     if (isLoading) return;
@@ -42,11 +43,14 @@ export default function SubscribeModal({ isOpen, setIsOpen }: Props) {
 
     await subscribePremium();
 
+    await handleGetSubscriptionStatus();
+
     setIsLoading(false);
   };
 
   const handleGetSubscriptionStatus = async () => {
     if (!isAptosClientReady) return;
+    if (!account) return;
 
     const response = await getSubscriptionStatus();
     if (!response) {
@@ -57,35 +61,61 @@ export default function SubscribeModal({ isOpen, setIsOpen }: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancelButton}>
+    <Modal isOpen={isOpen} onClose={handleCancelButton} hideCloseButton={true}>
       <ModalContent>
+        <div
+          id="icon"
+          className=" absolute flex top-0 right-0 items-center justify-center"
+        >
+          <img src="/crown.png" className="w-24 h-24" alt="premium" />
+        </div>
+
         <ModalHeader>Premium</ModalHeader>
         <ModalBody>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-5">
             {subscriptionStatus === null && <Spinner />}
             {subscriptionStatus !== null && (
               <>
-                <div id="status" className="flex flex-row gap-2">
-                  <div className="font-bold">Premium Status: </div>
-                  <div>{subscriptionStatus.status ? "Active" : "Inactive"}</div>
-                </div>
-                {subscriptionStatus.status && (
-                  <div id="remaining-time" className="flex flex-row gap-2">
-                    <div className=" font-bold">Due: </div>
+                <div id="status-rt" className="flex flex-col gap-1">
+                  <div id="status" className="flex flex-row gap-2">
+                    <div className="font-bold">Premium Status: </div>
                     <div>
-                      {new Date(
-                        Date.now() + subscriptionStatus.remainingTime * 1000
-                      ).toDateString()}
+                      {subscriptionStatus.status ? "Active" : "Inactive"}
                     </div>
                   </div>
-                )}
+
+                  {subscriptionStatus.status && (
+                    <div id="remaining-time" className="flex flex-row gap-2">
+                      <div className=" font-bold">Due: </div>
+                      <div>
+                        {new Date(
+                          Date.now() + subscriptionStatus.remainingTime * 1000
+                        ).toDateString()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  id="features"
+                  className="flex flex-col p-3 gap-1 text-sm border border-primary rounded-lg"
+                >
+                  <div className="text-primary">
+                    1. A better artificial intelligence model with higher
+                    accuracy.
+                  </div>
+                  <div className="text-primary">
+                    2. More experienced contributions.
+                  </div>
+                  <div className="text-primary">3. Exclusive tools.</div>
+                </div>
               </>
             )}
           </div>
         </ModalBody>
+
         <ModalFooter>
           <div className="flex gap-4">
-            <Button onPress={handleCancelButton}>Cancel</Button>
             <Button
               color="primary"
               isLoading={isLoading}

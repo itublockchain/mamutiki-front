@@ -42,7 +42,7 @@ type FunctionAccessStringCreatorProps =
       functionName: "subscribe" | "check_subscription";
     }
   | {
-      moduleName: "mamu";
+      moduleName: "DATA";
       functionName: "get_balance" | "get_balances" | "mint" | "faucet";
     };
 
@@ -54,7 +54,7 @@ export const functionAccessStringCreator = ({
   | false => {
   let accountAddress = "";
 
-  if (moduleName === "mamu") {
+  if (moduleName === "DATA") {
     accountAddress =
       process.env.NEXT_PUBLIC_TOKEN_ACCOUNT_ADDRESS_WITH_0X_PREFIX || "";
   } else {

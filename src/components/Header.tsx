@@ -3,20 +3,26 @@ import { CreateCampaignModal } from "@/modals/CreateCampaignModal";
 import SubscribeModal from "@/modals/SubscribeModal";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { useAptosClient } from "@/helpers/useAptosClient";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 
-import { usePathname } from "next/navigation";
 import { Bars3Icon } from "@heroicons/react/24/solid";
+import { usePathname } from "next/navigation";
 
+import { Spinner } from "@heroui/react";
 import MobileHeaderDrawer from "./MobileHeaderDrawer";
 
 export function Header() {
   const { connected, account } = useWallet();
 
-  const { isUsersNetworkCorrect } = useAptosClient();
+  const {
+    isUsersNetworkCorrect,
+    getBalanceOfAccount,
+    isAptosClientReady,
+    getTokensFromFaucet,
+  } = useAptosClient();
 
   const [isCreateCampaignModalOpen, setIsCreateCampaignModalOpen] =
     useState(false);
@@ -28,7 +34,15 @@ export function Header() {
 
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
+  const [balance, setBalance] = useState<null | string>(null);
+
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (account && isAptosClientReady) {
+      handleGetBalance();
+    }
+  }, [account, isAptosClientReady]);
 
   const handleCreateButtonAtHeader = () => {
     if (!connected) return handleConnectButton();
@@ -51,6 +65,18 @@ export function Header() {
 
   const handleHaburgerDrawButton = () => {
     setIsMobileDrawerOpen(true);
+  };
+
+  const handleGetBalance = async () => {
+    if (!isAptosClientReady) return;
+    if (!account) return;
+
+    const balance = await getBalanceOfAccount();
+    if (balance === false) {
+      return setBalance(null);
+    }
+
+    setBalance(balance.toFixed(2));
   };
 
   return (
@@ -126,30 +152,6 @@ export function Header() {
           )}
 
           {/**
-           * Here is the account part.
-           * It shows the user's address and profile picture.
-           * It is only visible when the user is connected.
-           * It is visible in both mobile and desktop views.
-           * But have different styles for each view.
-           */}
-          {connected && (
-            <div
-              id="user-part"
-              className="flex flex-row gap-2 items-center justify-center bg-white/10 rounded-xl md:py-1.5 md:px-3"
-            >
-              <img
-                src="https://picsum.photos/200?random=1"
-                className="w-7 h-7 rounded-full"
-              />
-              <div className="hidden md:flex text-xs text-gray-300">
-                {account?.address.slice(0, 8) +
-                  "..." +
-                  account?.address.slice(-4)}
-              </div>
-            </div>
-          )}
-
-          {/**
            * Drawer button for mobile view.
            */}
           <div
@@ -159,6 +161,21 @@ export function Header() {
           >
             <Bars3Icon className="w-8 h-8" />
           </div>
+
+          {/**
+           * Faucet Button for desktop view.
+           */}
+          {connected && (
+            <div
+              id="create-button"
+              className="hidden md:flex flex-row items-center text-xs gap-2 text-primary cursor-pointer"
+              onClick={() => {
+                getTokensFromFaucet();
+              }}
+            >
+              Faucet
+            </div>
+          )}
 
           {/**
            * Create Campaign Button for desktop view.
@@ -171,6 +188,58 @@ export function Header() {
             >
               Create Campaign
               <PlusCircleIcon className="w-4 h-4 cursor-pointer" />
+            </div>
+          )}
+
+          {/**
+           * Here is the account part.
+           * It shows the user's address and profile picture.
+           * It is only visible when the user is connected.
+           * It is visible in both mobile and desktop views.
+           * But have different styles for each view.
+           */}
+
+          {connected && (
+            <div
+              id="user-part"
+              className="flex flex-row gap-4 items-center justify-center bg-white/10 rounded-2xl md:py-1.5 md:px-3"
+            >
+              <img
+                src="https://picsum.photos/200?random=1"
+                className="w-7 h-7 rounded-full"
+              />
+
+              <div className="hidden md:flex text-xs text-gray-300">
+                {account?.address.slice(0, 8) +
+                  "..." +
+                  account?.address.slice(-4)}
+              </div>
+
+              <div
+                className="flex h-6 border"
+                style={{
+                  borderTop: "1px solid transparent",
+                  borderImageSource:
+                    "linear-gradient(to top, #fff540, transparent)",
+                  borderImageSlice: 1,
+                }}
+              />
+
+              <div
+                id="icon-balnace-parts"
+                className="flex items-center justify-center flex-row gap-1"
+              >
+                <div
+                  id="token-icon"
+                  className="flex items-center justify-center"
+                >
+                  <img src="/token.png" className="w-5 h-5" />
+                </div>
+
+                <div id="token-count" className="flex flex-row text-xs gap-1">
+                  {balance === null ? <Spinner size="sm" /> : balance}
+                </div>
+              </div>
             </div>
           )}
 
