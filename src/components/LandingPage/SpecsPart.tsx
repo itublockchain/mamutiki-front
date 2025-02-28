@@ -15,13 +15,13 @@ export default function SpecsPart() {
       </div>
       <div
         id="content"
-        className="flex flex-col gap-5 md:grid md:grid-cols-4 md:grid-rows-4 md:gap-4 md:min-h-screen"
+        className="flex flex-col gap-5 md:grid md:grid-cols-4 md:grid-rows-4 md:gap-4 md:min-h-[70vh]"
       >
         {/* Top-Left Large Card */}
 
         <SpecCard
           title="Bulletproof Security"
-          description="End-to-end RSA and AES encryption ensures your data remains inaccessible to unauthorized users."
+          description="Our data marketplace ensures secure data storage and access by utilizing a multi-layered encryption approach. When a contributor submits data, it is symmetrically encrypted using a randomly generated secret key and stored on IPFS. This secret key is then asymmetrically encrypted with the campaign’s public key, ensuring that only the campaign creator, with the corresponding private key, can decrypt it. This method guarantees that sensitive data remains private and accessible only to authorized parties."
           iconURL="/features/bullet_proof_securtiy.png"
           className="col-span-2 row-span-2"
         />
@@ -49,7 +49,7 @@ export default function SpecsPart() {
 
         <SpecCard
           title="Instant Rewards"
-          description="Enjoy prompt, immediate compensation when you submit valid data to any campaign."
+          description="Rewards are allocated based on contribution quality and campaign requirements. Each valid submission gets a quality score, determining its share of the reward pool. Higher-quality data earns more, ensuring fair distribution and incentivizing valuable contributions. Smart contracts automate calculations, preventing low-value submissions from diluting rewards. This approach maintains trust and efficiency in the marketplace."
           iconURL="/features/instant_rewards.png"
           className="col-span-2 row-span-2"
         />

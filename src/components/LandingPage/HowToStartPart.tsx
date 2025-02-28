@@ -57,6 +57,7 @@ export default function HowToStartPart() {
           <Image
             src="/step/ready_to_use.svg"
             alt="Ready To Use Image"
+            className=""
             width={244}
             height={44}
           />

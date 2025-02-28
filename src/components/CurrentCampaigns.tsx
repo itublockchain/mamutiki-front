@@ -257,7 +257,7 @@ export function CurrentCampaigns() {
           <Spinner />
         </div>
       ) : (
-        <div className="flex flex-row flex-wrap p-4 md:p-0 gap-5">
+        <div className="flex flex-row justify-center flex-wrap p-4 md:p-0 gap-5">
           {sortedCampaings.map((campaign) => (
             <CampaignCard
               id={campaign.id}

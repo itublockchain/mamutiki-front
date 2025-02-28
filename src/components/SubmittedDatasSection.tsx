@@ -14,13 +14,14 @@ import { useEffect, useState } from "react";
 
 import { VisitSubmittedDataModal } from "@/modals/VisitSubmittedDataModal";
 import { ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 type Props = {
   campaignId: number;
   campaignDocData: GetCampaignFunctionResponse;
 };
 
-export function SubmittedDatasSection({ campaignId }: Props) {
+export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
   const [submittedDatas, setSubmittedDatas] = useState<Contribution[] | null>(
     null
   );
@@ -32,9 +33,20 @@ export function SubmittedDatasSection({ campaignId }: Props) {
 
   const [submittedDataDocDataIndex, setSubmittedDataDocDataIndex] = useState(0);
 
+  const [isOwner, setIsOWner] = useState(false);
+  const { account } = useWallet();
+
   useEffect(() => {
     if (campaignId && isAptosClientReady) getSubmittedDatas();
   }, [campaignId, isAptosClientReady]);
+
+  useEffect(() => {
+    if (!account) return setIsOWner(false);
+
+    const connectedAccountAddress = account.address;
+
+    setIsOWner(connectedAccountAddress === campaignDocData.creator);
+  }, [account]);
 
   const getSubmittedDatas = async () => {
     if (!isAptosClientReady || !campaignId) return setSubmittedDatas(null);
@@ -108,6 +120,9 @@ export function SubmittedDatasSection({ campaignId }: Props) {
               dataAmount: item.dataCount,
               action: (
                 <ArrowsRightLeftIcon
+                  style={{
+                    display: isOwner ? "unset" : "none",
+                  }}
                   className="w-5 cursor-pointer"
                   onClick={() => {
                     handleVisitSubmittedData(index);
