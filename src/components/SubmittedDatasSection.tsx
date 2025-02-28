@@ -85,10 +85,6 @@ export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
                 key: "address",
                 label: "Address",
               },
-              {
-                key: "share",
-                label: "Share",
-              },
 
               {
                 key: "aiScore",
@@ -98,6 +94,11 @@ export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
               {
                 key: "dataAmount",
                 label: "Data Amount",
+              },
+
+              {
+                key: "reward",
+                label: "Reward",
               },
               {
                 key: "action",
@@ -117,9 +118,13 @@ export function SubmittedDatasSection({ campaignId, campaignDocData }: Props) {
                 item.contributor.slice(0, 4) +
                 "..." +
                 item.contributor.slice(-7),
-              share: "20%",
               aiScore: item.score,
               dataAmount: item.dataCount,
+              reward: (
+                (item.score / 100) *
+                item.dataCount *
+                campaignDocData.unit_price
+              ).toFixed(4),
               action: (
                 <ArrowsRightLeftIcon
                   style={{
