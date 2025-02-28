@@ -14,7 +14,6 @@ import { useAptosClient } from "@/helpers/useAptosClient";
 import { AIAnalysisResponse } from "@/types/API";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { useRouter } from "next/navigation";
 
 type Props = {
   isOpen: boolean;
@@ -40,8 +39,6 @@ export function SubmitDataModal({ isOpen, setIsOpen, campaignData }: Props) {
   const { addContribution } = useAptosClient();
 
   const { account } = useWallet();
-
-  const router = useRouter();
 
   // Clearing States Initially and on Close
   useEffect(() => {
