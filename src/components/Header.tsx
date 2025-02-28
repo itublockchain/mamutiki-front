@@ -136,19 +136,34 @@ export function Header() {
           className="flex flex-row gap-5 md:gap-7 items-center"
         >
           {/**
-           * Connect Wallet Button for desktop view.
+           * Launch App Button for desktop view.
+           */}
+
+          <Link
+            href="/app"
+            id="connect-button"
+            className="hidden md:flex items-center cursor-pointer justify-center text-md bg-primary py-1 px-3 rounded-xl text-black"
+            style={{
+              display: pathname === "/app" ? "none" : "flex",
+            }}
+          >
+            Launch App
+          </Link>
+
+          {/**
+           * Connect wallet Button for desktop view.
            */}
           {!connected && (
-            <Link
-              href="/app"
+            <div
               id="connect-button"
               className="hidden md:flex items-center cursor-pointer justify-center text-md bg-primary py-1 px-3 rounded-xl text-black"
+              onClick={handleConnectButton}
               style={{
-                display: pathname === "/app" ? "none" : "flex",
+                display: pathname === "/app" ? "flex" : "none",
               }}
             >
-              Launch App
-            </Link>
+              Connect Wallet
+            </div>
           )}
 
           {/**
@@ -185,6 +200,9 @@ export function Header() {
               onClick={() => {
                 getTokensFromFaucet();
               }}
+              style={{
+                display: pathname === "/app" ? "flex" : "none",
+              }}
             >
               Faucet
             </div>
@@ -198,6 +216,9 @@ export function Header() {
               id="create-button"
               className="hidden md:flex flex-row items-center text-md gap-2 text-primary cursor-pointer"
               onClick={handleCreateButtonAtHeader}
+              style={{
+                display: pathname === "/app" ? "flex" : "none",
+              }}
             >
               Create Campaign
               <PlusCircleIcon className="w-4 h-4 cursor-pointer" />
@@ -216,6 +237,9 @@ export function Header() {
             <div
               id="user-part"
               className="flex flex-row  gap-4 items-center justify-center bg-white/10 rounded-2xl p-2 md:py-1.5 md:px-3"
+              style={{
+                display: pathname === "/app" ? "flex" : "none",
+              }}
             >
               <img
                 src="https://picsum.photos/200?random=1"
@@ -276,6 +300,9 @@ export function Header() {
           <div
             id="premium-part"
             className="hidden md:flex justify-center items-center"
+            style={{
+              display: pathname === "/app" ? "flex" : "none",
+            }}
           >
             <img
               src="/crown.png"
