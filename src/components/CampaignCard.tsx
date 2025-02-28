@@ -23,10 +23,28 @@ export default function CampaignCard({
       className="flex flex-col w-full md:w-[305px] gap-7 justify-center bg-gradient-to-b from-gray-950 to-[#99977348] px-6 py-7 rounded-xl border-b border-l border-yellow-300/40 transition transform duration-300 hover:scale-105 hover:shadow-lg"
     >
       <div id="title-description" className="flex flex-col overflow-auto">
-        <div id="title" className="text-xl font-bold text-yellow-300">
+        <div
+          id="title"
+          className="text-xl font-bold text-yellow-300"
+          style={{
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 1,
+          }}
+        >
           {title}
         </div>
-        <div id="description" className="text-gray-400 text-xs min-h-12">
+        <div
+          id="description"
+          className="text-gray-400 text-xs min-h-12"
+          style={{
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 4,
+          }}
+        >
           {description}
         </div>
       </div>
