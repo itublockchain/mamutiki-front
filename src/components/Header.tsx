@@ -144,7 +144,7 @@ export function Header() {
             id="connect-button"
             className="hidden md:flex items-center cursor-pointer justify-center text-md bg-primary py-1 px-3 rounded-xl text-black"
             style={{
-              display: pathname === "/app" ? "none" : "flex",
+              display: pathname !== "/" ? "none" : "flex",
             }}
           >
             Launch App
@@ -159,7 +159,7 @@ export function Header() {
               className="hidden md:flex items-center cursor-pointer justify-center text-md bg-primary py-1 px-3 rounded-xl text-black"
               onClick={handleConnectButton}
               style={{
-                display: pathname === "/app" ? "flex" : "none",
+                display: pathname !== "/" ? "flex" : "none",
               }}
             >
               Connect Wallet
@@ -201,7 +201,7 @@ export function Header() {
                 getTokensFromFaucet();
               }}
               style={{
-                display: pathname === "/app" ? "flex" : "none",
+                display: pathname !== "/" ? "flex" : "none",
               }}
             >
               Faucet
@@ -217,7 +217,7 @@ export function Header() {
               className="hidden md:flex flex-row items-center text-md gap-2 text-primary cursor-pointer"
               onClick={handleCreateButtonAtHeader}
               style={{
-                display: pathname === "/app" ? "flex" : "none",
+                display: pathname !== "/" ? "flex" : "none",
               }}
             >
               Create Campaign
@@ -238,7 +238,7 @@ export function Header() {
               id="user-part"
               className="flex flex-row  gap-4 items-center justify-center bg-white/10 rounded-2xl p-2 md:py-1.5 md:px-3"
               style={{
-                display: pathname === "/app" ? "flex" : "none",
+                display: pathname !== "/" ? "flex" : "none",
               }}
             >
               <img
@@ -301,7 +301,7 @@ export function Header() {
             id="premium-part"
             className="hidden md:flex justify-center items-center"
             style={{
-              display: pathname === "/app" ? "flex" : "none",
+              display: pathname !== "/" ? "flex" : "none",
             }}
           >
             <img
