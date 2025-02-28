@@ -444,7 +444,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               onChange={handleDescriptionChange}
               value={description}
               minLength={50}
-              maxLength={2000}
+              maxLength={1000}
             />
 
             <Input
@@ -467,6 +467,8 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
               placeholder="Enter data spec for your campaign..."
               onChange={handleDataSpecChange}
               value={dataSpec}
+              minLength={50}
+              maxLength={2000}
             />
 
             <Slider
