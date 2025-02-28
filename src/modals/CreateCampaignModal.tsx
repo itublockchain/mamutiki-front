@@ -416,7 +416,7 @@ export function CreateCampaignModal({ isModalOpen, setIsModalOpen }: Props) {
   return (
     <>
       <Modal
-        isOpen={true}
+        isOpen={isModalOpen}
         onClose={handleCancelButton}
         scrollBehavior="outside"
       >
