@@ -91,14 +91,6 @@ async function createContentStringData(file: File) {
 }
 
 async function getScoreFromAI(fileContentsString: string, dataSpec: string) {
-  function getRandomInt(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  const randomInt = getRandomInt(70, 100);
-
-  return randomInt;
-
   const genAI = new GoogleGenerativeAI(
     process.env.GOOGLE_GENERATIVE_AI_API_KEY as string
   );
