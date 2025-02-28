@@ -30,7 +30,8 @@ type FunctionAccessStringCreatorProps =
         | "get_campaign"
         | "get_public_key_for_encryption"
         | "last_created_campaign"
-        | "get_all_active_campaigns";
+        | "get_all_active_campaigns"
+        | "close_campaign_by_id";
     }
   | {
       moduleName: "contribution_manager";

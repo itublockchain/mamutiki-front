@@ -64,10 +64,9 @@ export default function RoadmapPart() {
             id="content-paragraph-part"
             className="flex w-[49%] border border-l-0 border-primary/40 rounded-md rounded-l-none text-sm text-white p-5 pl-2"
           >
-            We will create and integrate our own token $DATA to enhance the
-            functionality and ecosystem of our project. This token will be
-            utilized for transactions, rewards, and various platform
-            interactions, providing additional value to our users.
+            Integrating Trusted Execution Environments (TEE) to ensure privacy
+            and efficiency from the ground up. And embedding Gitcoin Passport to
+            create a secure and trusted user base.
           </div>
         </div>
       </div>
@@ -75,7 +74,7 @@ export default function RoadmapPart() {
       <SmallScreenStep
         quarterTitle="Q1"
         stepTitle="Laying the Groundwork"
-        stepDescription="We will create and integrate our own token $DATA to enhance the functionality and ecosystem of our project. This token will be utilized for transactions, rewards, and various platform interactions, providing additional value to our users."
+        stepDescription="Integrating Trusted Execution Environments (TEE) to ensure privacy and efficiency from the ground up. And embedding Gitcoin Passport to create a secure and trusted user base."
       />
 
       <div
@@ -90,10 +89,9 @@ export default function RoadmapPart() {
             id="content-paragraph-part"
             className="flex w-[49%] border border-r-0 border-primary/40 rounded-md rounded-r-none text-sm text-white p-5 pr-2 text-right"
           >
-            We will create and integrate our own token $DATA to enhance the
-            functionality and ecosystem of our project. This token will be
-            utilized for transactions, rewards, and various platform
-            interactions, providing additional value to our users.
+            Completing and testing Gitcoin Passport integration for maximum
+            reliability. And developing a custom trusted wallet verifier node
+            for being more decenterlized platform
           </div>
 
           <div
@@ -137,10 +135,7 @@ export default function RoadmapPart() {
       <SmallScreenStep
         quarterTitle="Q2"
         stepTitle="Strengthening the Core"
-        stepDescription="We will create and integrate our own token $DATA to enhance the
-            functionality and ecosystem of our project. This token will be
-            utilized for transactions, rewards, and various platform
-            interactions, providing additional value to our users."
+        stepDescription="Completing and testing Gitcoin Passport integration for maximum reliability. And developing a custom trusted wallet verifier node for being more decenterlized platform."
       />
 
       <div
@@ -189,9 +184,10 @@ export default function RoadmapPart() {
             id="content-paragraph-part"
             className="flex w-[49%] border border-l-0 border-primary/40 rounded-md rounded-l-none text-sm text-white p-5 pl-2"
           >
-            We will onboard our first customers, allowing them to experience our
-            data marketplace firsthand. Their feedback will help us refine the
-            platform and improve its features to better meet user needs.
+            Launching the mainnet—full decentralization goes live, marking the
+            ecosystem&apos;s big debut. And rolling out the XP-based Panathenaia
+            campaign, engaging the community and rewarding early adopters as
+            momentum builds.
           </div>
         </div>
       </div>
@@ -199,9 +195,7 @@ export default function RoadmapPart() {
       <SmallScreenStep
         quarterTitle="Q3"
         stepTitle="Mainnet Ignition"
-        stepDescription="We will onboard our first customers, allowing them to experience our
-            data marketplace firsthand. Their feedback will help us refine the
-            platform and improve its features to better meet user needs."
+        stepDescription="Launching the mainnet—full decentralization goes live, marking the ecosystems big debut. And rolling out the XP-based Panathenaia campaign, engaging the community and rewarding early adopters as momentum builds."
       />
 
       <div
@@ -216,10 +210,10 @@ export default function RoadmapPart() {
             id="content-paragraph-part"
             className="flex w-[49%] border border-r-0 border-primary/40 rounded-md rounded-r-none text-sm text-white p-5 pr-2 text-right"
           >
-            We will create and integrate our own token $DATA to enhance the
-            functionality and ecosystem of our project. This token will be
-            utilized for transactions, rewards, and various platform
-            interactions, providing additional value to our users.
+            Introducing exclusive tools and features, providing premium value
+            and driving adoption. And launching community voting for burn and
+            buyback strategies, ensuring long-term sustainability and user
+            empowerment.
           </div>
 
           <div
@@ -261,11 +255,9 @@ export default function RoadmapPart() {
       </div>
 
       <SmallScreenStep
-        quarterTitle="Q3"
+        quarterTitle="Q4"
         stepTitle="Scaling New Heights"
-        stepDescription="We will onboard our first customers, allowing them to experience our
-            data marketplace firsthand. Their feedback will help us refine the
-            platform and improve its features to better meet user needs."
+        stepDescription="Introducing exclusive tools and features, providing premium value and driving adoption. And launching community voting for burn and buyback strategies, ensuring long-term sustainability and user empowerment."
       />
 
       <div

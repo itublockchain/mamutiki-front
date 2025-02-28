@@ -8,7 +8,7 @@ import { SubmitDataModal } from "@/modals/SubmitDataModal";
 import { GetCampaignFunctionResponse } from "@/types/Contract";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Spinner } from "@heroui/react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -20,13 +20,20 @@ export default function Home() {
 
   const [isSubmitDataModalOpen, setIsSubmitDataModalOpen] = useState(false);
 
-  const { getCampaignData, isAptosClientReady } = useAptosClient();
+  const { getCampaignData, isAptosClientReady, closeCampaignById } =
+    useAptosClient();
 
   const [diamondFullCount, setDiamondFullCount] = useState(0);
 
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   const { account } = useWallet();
+
+  const [isOwner, setIsOwner] = useState(false);
+
+  const [isCloseLoading, setIsCloseLoading] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     if (!isAptosClientReady || !id) return;
@@ -42,6 +49,12 @@ export default function Home() {
 
     setDiamondFullCount(fullD);
   }, [campaignData]);
+
+  useEffect(() => {
+    if (!account || !campaignData || campaignData === "not-exist") return;
+
+    setIsOwner(account.address === campaignData.creator);
+  }, [account, campaignData]);
 
   const getInitialCampaignData = async () => {
     if (typeof id !== "string") {
@@ -62,6 +75,22 @@ export default function Home() {
     if (!account) return setIsWalletModalOpen(true);
 
     setIsSubmitDataModalOpen(true);
+  };
+
+  const handleCloseCampaignButton = async () => {
+    if (!isOwner) return;
+
+    if (isCloseLoading) return;
+
+    setIsCloseLoading(true);
+
+    const res = await closeCampaignById(Number(id as string));
+
+    if (res) {
+      router.push("/app/campaigns");
+    }
+
+    setIsCloseLoading(false);
   };
 
   if (campaignData === null)
@@ -208,13 +237,25 @@ export default function Home() {
             </div>
           </div>
 
-          <div
-            id="button-part"
-            className="flex items-center justify-center px-2 py-1.5 bg-primary rounded-lg cursor-pointer text-black font-bold text-sm"
-            onClick={handleSubmitButton}
-          >
-            Submit Data
-          </div>
+          {!isOwner && (
+            <div
+              id="button-part"
+              className="flex items-center justify-center px-2 py-1.5 bg-primary rounded-lg cursor-pointer text-black font-bold text-sm"
+              onClick={handleSubmitButton}
+            >
+              Submit Data
+            </div>
+          )}
+
+          {isOwner && (
+            <div
+              id="button-part"
+              className="flex items-center justify-center px-2 py-1.5 min-h-8 min-w-24 bg-danger text-white rounded-lg cursor-pointer text-xs"
+              onClick={handleCloseCampaignButton}
+            >
+              {isCloseLoading ? <Spinner size="sm" /> : "Close Campaign"}
+            </div>
+          )}
         </div>
 
         <SubmittedDatasSection

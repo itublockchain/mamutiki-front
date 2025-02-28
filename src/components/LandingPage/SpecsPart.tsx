@@ -35,7 +35,7 @@ export default function SpecsPart() {
 
         <SpecCard
           title="Lightning Speed"
-          description="Built on Aptos, our platform delivers ultra-fast transactions—up to 160,000 TPS—for unmatched performance."
+          description="Built on Movement, our platform delivers ultra-fast transactions—up to 160,000 TPS—for unmatched performance."
           iconURL="/features/ligthing_spped.png"
           className="col-span-2 row-span-1"
         />

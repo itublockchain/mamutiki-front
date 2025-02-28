@@ -74,9 +74,11 @@ export function Header() {
           <Link href="/" className="cursor-pointer">
             <img src="/logo.png" className="w-8 h-8" />
           </Link>
+
           <Link href="/" className="hidden md:flex text-gray-300">
             Home
           </Link>
+
           <Link href="/app" className="hidden md:flex text-gray-300">
             Marketplace
           </Link>

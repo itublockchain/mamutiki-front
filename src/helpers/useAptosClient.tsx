@@ -693,6 +693,46 @@ export function useAptosClient() {
     }
   };
 
+  const closeCampaignById = async (campaignId: number) => {
+    if (!aptosClient) {
+      return false;
+    }
+
+    if (!isWalletConnected) {
+      return false;
+    }
+
+    const accessFunctionString = functionAccessStringCreator({
+      moduleName: "campaign_manager",
+      functionName: "close_campaign_by_id",
+    });
+    if (!accessFunctionString) {
+      console.error("Error creating function access string. See other logs.");
+      return false;
+    }
+
+    try {
+      const signAndSubmitResult = await signAndSubmitTransaction({
+        data: {
+          function: accessFunctionString,
+          functionArguments: [campaignId.toString()],
+        },
+      });
+
+      await aptosClient.waitForTransaction({
+        transactionHash: signAndSubmitResult.hash,
+      });
+      toast.success("Campaign closed successfully!");
+      return true;
+    } catch (error) {
+      console.error("Error: ", error);
+
+      debugError(error);
+
+      return false;
+    }
+  }
+
   return {
     createCampaign,
     getAllCampaigns,
@@ -707,5 +747,6 @@ export function useAptosClient() {
     getLastCreatedCampaignOfCurrentUser,
     isUsersNetworkCorrect,
     getAllActiveCampaings,
+    closeCampaignById
   };
 }

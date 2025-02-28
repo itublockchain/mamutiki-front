@@ -20,18 +20,28 @@ export default function CampaignCard({
   return (
     <Link
       href={`/app/campaigns/${id}`}
-      className="flex flex-col w-full md:w-[350px] gap-7 justify-center bg-gradient-to-b from-gray-950 to-[#99977348] px-6 py-7 rounded-xl border-b border-l border-yellow-300/40 transition transform duration-300 hover:scale-105 hover:shadow-lg"
+      className="flex flex-col w-full md:w-[305px] gap-7 justify-center bg-gradient-to-b from-gray-950 to-[#99977348] px-6 py-7 rounded-xl border-b border-l border-yellow-300/40 transition transform duration-300 hover:scale-105 hover:shadow-lg"
     >
       <div id="title-description" className="flex flex-col overflow-auto">
         <div id="title" className="text-xl font-bold text-yellow-300">
           {title}
         </div>
-        <div id="description" className="text-gray-400 text-xs">
+        <div id="description" className="text-gray-400 text-xs min-h-12">
           {description}
         </div>
       </div>
 
-      <div id="money-part" className="flex flex-col gap-2 text-white text-xs">
+      <div id="money-part" className="flex flex-row gap-5 text-white text-xs">
+        <div id="staked-part" className="flex flex-col">
+          <div id="label" className="text-gray-500">
+            Total Staked
+          </div>
+
+          <div id="value" className="text-yellow-300">
+            {staked} DATA
+          </div>
+        </div>
+
         <div id="unit-part" className="flex flex-col">
           <div id="label" className="text-gray-500">
             Unit Price
@@ -40,29 +50,14 @@ export default function CampaignCard({
             {unitPrice} DATA
           </div>
         </div>
-
-        <div id="staked-part" className="flex flex-col">
-          <div id="label" className="text-gray-500">
-            Total Staked
-          </div>
-          <div id="value" className="text-yellow-300">
-            {staked} DATA
-          </div>
-        </div>
       </div>
 
-      <div id="buttons-part" className="flex flex-row gap-5">
+      <div id="buttons-part" className="flex w-full">
         <div
           id="submit-button"
-          className="flex justify-center items-center text-sm bg-primary text-black rounded-lg py-1.5 px-6 transition transform duration-300 hover:scale-105 hover:shadow-lg"
+          className="flex w-full justify-center items-center text-sm bg-primary text-black rounded-lg py-1.5 px-6 transition transform duration-300 hover:scale-105 hover:shadow-lg"
         >
           Submit
-        </div>
-        <div
-          id="learn-more-button"
-          className="flex flex-grow justify-center items-center text-sm border border-primary text-primary rounded-lg py-1.5 px-6 transition transform duration-300 hover:scale-105 hover:bg-primary hover:text-black hover:border-transparent"
-        >
-          Learn More
         </div>
       </div>
     </Link>
