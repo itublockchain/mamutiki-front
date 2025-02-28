@@ -1,11 +1,5 @@
 import SmallScreenStep from "../Roadmap/SmallScreenStep";
 
-const GradientBorderStyle = {
-  border: "1px solid transparent",
-  "border-image-source": "linear-gradient(to right, #fff540, transparent)",
-  "border-image-slice": 1,
-};
-
 export default function RoadmapPart() {
   return (
     <div
@@ -80,11 +74,8 @@ export default function RoadmapPart() {
 
       <SmallScreenStep
         quarterTitle="Q1"
-        stepTitle="$Data Token"
-        stepDescription=" We will create and integrate our own token $DATA to enhance the
-            functionality and ecosystem of our project. This token will be
-            utilized for transactions, rewards, and various platform
-            interactions, providing additional value to our users."
+        stepTitle="Laying the Groundwork"
+        stepDescription="We will create and integrate our own token $DATA to enhance the functionality and ecosystem of our project. This token will be utilized for transactions, rewards, and various platform interactions, providing additional value to our users."
       />
 
       <div
@@ -145,7 +136,7 @@ export default function RoadmapPart() {
 
       <SmallScreenStep
         quarterTitle="Q2"
-        stepTitle="Launch DApp"
+        stepTitle="Strengthening the Core"
         stepDescription="We will create and integrate our own token $DATA to enhance the
             functionality and ecosystem of our project. This token will be
             utilized for transactions, rewards, and various platform
@@ -205,6 +196,14 @@ export default function RoadmapPart() {
         </div>
       </div>
 
+      <SmallScreenStep
+        quarterTitle="Q3"
+        stepTitle="Mainnet Ignition"
+        stepDescription="We will onboard our first customers, allowing them to experience our
+            data marketplace firsthand. Their feedback will help us refine the
+            platform and improve its features to better meet user needs."
+      />
+
       <div
         id="q4-part"
         className="hidden md:flex flex-col w-[64%] items-center gap-5"
@@ -263,7 +262,7 @@ export default function RoadmapPart() {
 
       <SmallScreenStep
         quarterTitle="Q3"
-        stepTitle="Onboarding"
+        stepTitle="Scaling New Heights"
         stepDescription="We will onboard our first customers, allowing them to experience our
             data marketplace firsthand. Their feedback will help us refine the
             platform and improve its features to better meet user needs."
